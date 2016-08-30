@@ -2,19 +2,21 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
 
+// MongoConfig has config values for MongoDB
 type MongoConfig string
+
+// RedisConfig has config values for Redis
 type RedisConfig struct {
 	Addr string `json:"addr"`
 	Pwd  string `json:"pwd"`
 }
 
+// Config struct defines the config structure
 type Config struct {
 	Mongo MongoConfig `json:"mongo"`
 	Redis RedisConfig `json:"redis"`
@@ -23,18 +25,18 @@ type Config struct {
 func main() {
 	file, err := ioutil.ReadFile("./config.json")
 	if err != nil {
-		fmt.Println("config.json file not found")
-		os.Exit(1)
+		log.Fatal("config.json file not found")
 	}
+
 	config := new(Config)
 	json.Unmarshal(file, &config)
 
 	storage := NewStorage(config.Mongo)
-	alerter := InitAlerter(config.Redis)
+	c := make(chan string)
+	alerter := NewAlerter(config.Redis, &c)
 	handlers := InitHandlers(storage, alerter)
 
-	c := make(chan string)
-	alerter.Start(c)
+	alerter.StartListening()
 
 	mux := http.NewServeMux()
 

@@ -8,20 +8,23 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Storage struct is used for storeing persistant data of alerts
 type Storage struct {
 	Session *mgo.Session
 }
 
+// NewStorage creates and returns new Storage instance
 func NewStorage(url MongoConfig) *Storage {
 	ses, err := mgo.Dial(string(url))
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	return &Storage{Session: ses}
 }
 
+// Alert struct represents alert data stored in storage
 type Alert struct {
 	ID        bson.ObjectId `bson:"_id"`
 	Name      string
@@ -31,6 +34,7 @@ type Alert struct {
 	Data      string
 }
 
+// AddAlert adds new alert to storage
 func (s *Storage) AddAlert(a *Alert) string {
 	a.ID = bson.NewObjectId()
 	err := s.Session.DB("tmpmail-dev").C("alerts").Insert(a)
@@ -42,6 +46,7 @@ func (s *Storage) AddAlert(a *Alert) string {
 	return a.ID.Hex()
 }
 
+// GetAlert Finds and returns alert data from storage
 func (s *Storage) GetAlert(alertID string) *Alert {
 	ID := bson.ObjectIdHex(alertID)
 

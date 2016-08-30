@@ -7,26 +7,31 @@ import (
 	redis "gopkg.in/redis.v4"
 )
 
+// Alerter is the struct for alerting on event times
 type Alerter struct {
 	client *redis.Client
+	c      *chan string
 }
 
-func InitAlerter(config RedisConfig) *Alerter {
+// NewAlerter creates and returns new Alerter instance
+func NewAlerter(config RedisConfig, c *chan string) *Alerter {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Addr,
 		Password: config.Pwd,
 		DB:       0,
 	})
 
-	return &Alerter{client: client}
+	return &Alerter{client: client, c: c}
 }
 
+// AddAlert method adds new alert to specified date
 func (a *Alerter) AddAlert(alertID string, alertDate time.Time) {
 	a.client.Set(alertID, "1", 0)
 	a.client.ExpireAt(alertID, alertDate)
 }
 
-func (a *Alerter) Start(c chan string) {
+// StartListening starts to listen from Redis for alerts
+func (a *Alerter) StartListening() {
 	go func() {
 		pubsub, err := a.client.Subscribe("__keyevent@0__:expired")
 
@@ -42,7 +47,7 @@ func (a *Alerter) Start(c chan string) {
 			}
 
 			log.Println(string(msg.Payload))
-			c <- string(msg.Payload)
+			*a.c <- string(msg.Payload)
 		}
 	}()
 }
