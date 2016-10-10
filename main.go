@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,7 +41,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/new", http.HandlerFunc(handlers.NewAlert))
+	mux.Handle("/new-alert", http.HandlerFunc(handlers.NewAlert))
 
 	go func() {
 		for {
@@ -50,6 +51,6 @@ func main() {
 	}()
 
 	log.Println("Starting server")
-	http.ListenAndServe(":8080", mux)
+	fmt.Println(http.ListenAndServe(":8081", mux))
 
 }

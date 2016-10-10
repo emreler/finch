@@ -11,21 +11,26 @@ import (
 )
 
 const (
+	// TypeHTTP .
 	TypeHTTP = "http"
 )
 
+// Handlers .
 type Handlers struct {
 	stg *Storage
 	alt *Alerter
 }
 
+// InitHandlers initializes handlers
 func InitHandlers(stg *Storage, alt *Alerter) *Handlers {
 	h := &Handlers{stg: stg, alt: alt}
 
 	return h
 }
 
+// NewAlertRequest .
 type NewAlertRequest struct {
+	Token      string `json:"token"`
 	Name       string `json:"name"`
 	Channel    string `json:"channel"`
 	URL        string `json:"url"`
@@ -34,6 +39,7 @@ type NewAlertRequest struct {
 	AlertAfter int    `json:"alertAfter"`
 }
 
+// NewAlert creates new alert
 func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		req := new(NewAlertRequest)
@@ -44,6 +50,13 @@ func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 			fmt.Fprintf(w, "invalid format")
+			return
+		}
+
+		userID, err := h.stg.CheckToken(req.Token)
+
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusBadRequest)
 			return
 		}
 
@@ -60,7 +73,7 @@ func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		alert := &Alert{Name: req.Name, AlertDate: alertDate, Channel: req.Channel, URL: req.URL, Data: req.Data}
+		alert := &Alert{Name: req.Name, AlertDate: alertDate, Channel: req.Channel, URL: req.URL, Data: req.Data, User: *userID}
 
 		alertID := h.stg.AddAlert(alert)
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
@@ -70,6 +83,7 @@ func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ProcessAlert processes the alert
 func (h *Handlers) ProcessAlert(alertID string) {
 	log.Printf("Getting %s\n", alertID)
 	alert := h.stg.GetAlert(alertID)

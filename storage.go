@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 	"time"
 
@@ -32,6 +34,48 @@ type Alert struct {
 	Channel   string
 	URL       string
 	Data      string
+	User      bson.ObjectId
+}
+
+type User struct {
+	ID    bson.ObjectId `bson:"_id"`
+	Name  string
+	Email string
+	Token string
+}
+
+func generateToken() string {
+	b := make([]byte, 32)
+
+	_, err := rand.Read(b)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+// CheckToken checks token
+func (s *Storage) CheckToken(token string) (*bson.ObjectId, error) {
+	user := &User{}
+	err := s.Session.DB("tmpmail-dev").C("users").Find(bson.M{"token": token}).One(user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.ID, nil
+}
+
+// AddUser creates new user
+func (s *Storage) AddUser(user *User) error {
+	user.ID = bson.NewObjectId()
+	user.Token = generateToken()
+
+	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
+
+	return err
 }
 
 // AddAlert adds new alert to storage
