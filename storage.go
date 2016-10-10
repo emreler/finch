@@ -37,6 +37,7 @@ type Alert struct {
 	User      bson.ObjectId
 }
 
+// User .
 type User struct {
 	ID    bson.ObjectId `bson:"_id"`
 	Name  string
@@ -68,18 +69,18 @@ func (s *Storage) CheckToken(token string) (*bson.ObjectId, error) {
 	return &user.ID, nil
 }
 
-// AddUser creates new user
-func (s *Storage) AddUser(user *User) error {
+// CreateUser creates new user
+func (s *Storage) CreateUser(user *User) (string, error) {
 	user.ID = bson.NewObjectId()
 	user.Token = generateToken()
 
 	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
 
-	return err
+	return user.Token, err
 }
 
-// AddAlert adds new alert to storage
-func (s *Storage) AddAlert(a *Alert) string {
+// CreateAlert adds new alert to storage
+func (s *Storage) CreateAlert(a *Alert) string {
 	a.ID = bson.NewObjectId()
 	err := s.Session.DB("tmpmail-dev").C("alerts").Insert(a)
 

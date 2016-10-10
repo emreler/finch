@@ -41,7 +41,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/new-alert", http.HandlerFunc(handlers.NewAlert))
+	mux.Handle("/alerts", http.HandlerFunc(handlers.CreateAlert))
+	mux.Handle("/users", http.HandlerFunc(handlers.CreateUser))
 
 	go func() {
 		for {

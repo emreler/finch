@@ -28,8 +28,8 @@ func InitHandlers(stg *Storage, alt *Alerter) *Handlers {
 	return h
 }
 
-// NewAlertRequest .
-type NewAlertRequest struct {
+// CreateAlertRequest .
+type CreateAlertRequest struct {
 	Token      string `json:"token"`
 	Name       string `json:"name"`
 	Channel    string `json:"channel"`
@@ -39,10 +39,21 @@ type NewAlertRequest struct {
 	AlertAfter int    `json:"alertAfter"`
 }
 
-// NewAlert creates new alert
-func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
+// CreateUserRequest .
+type CreateUserRequest struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email"`
+}
+
+// CreateUserResponse .
+type CreateUserResponse struct {
+	Token string `json:"token"`
+}
+
+// CreateAlert creates new alert
+func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		req := new(NewAlertRequest)
+		req := &CreateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&req)
@@ -75,7 +86,7 @@ func (h *Handlers) NewAlert(w http.ResponseWriter, r *http.Request) {
 
 		alert := &Alert{Name: req.Name, AlertDate: alertDate, Channel: req.Channel, URL: req.URL, Data: req.Data, User: *userID}
 
-		alertID := h.stg.AddAlert(alert)
+		alertID := h.stg.CreateAlert(alert)
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 		log.Printf("%d seconds later", seconds)
 
@@ -92,5 +103,37 @@ func (h *Handlers) ProcessAlert(alertID string) {
 	if alert.Channel == TypeHTTP {
 		h := new(channel.HttpChannel)
 		h.Notify(alert.URL, alert.Data)
+	}
+}
+
+// CreateUser .
+func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		req := &CreateUserRequest{}
+
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&req)
+
+		if err != nil {
+			log.Println(err)
+			fmt.Fprintf(w, "invalid format")
+			return
+		}
+
+		if req.Name == nil || req.Email == nil {
+			fmt.Fprint(w, "invalid format")
+			return
+		}
+
+		user := &User{Name: *req.Name, Email: *req.Email}
+
+		token, err := h.stg.CreateUser(user)
+
+		if err != nil {
+			log.Println(err)
+			fmt.Fprintln(w, err)
+		}
+
+		SendSuccess(w, &CreateUserResponse{Token: token})
 	}
 }
