@@ -39,6 +39,11 @@ type CreateAlertRequest struct {
 	AlertAfter int    `json:"alertAfter"`
 }
 
+// CreateAlertResponse .
+type CreateAlertResponse struct {
+	AlertDate string `json:"alertDate"`
+}
+
 // CreateUserRequest .
 type CreateUserRequest struct {
 	Name  *string `json:"name"`
@@ -51,7 +56,7 @@ type CreateUserResponse struct {
 }
 
 // CreateAlert creates new alert
-func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	if r.Method == "POST" {
 		req := &CreateAlertRequest{}
 
@@ -60,15 +65,13 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Println(err)
-			fmt.Fprintf(w, "invalid format")
-			return
+			return nil, fmt.Errorf("Invalid format")
 		}
 
 		userID, err := h.stg.CheckToken(req.Token)
 
 		if err != nil {
-			http.Error(w, "Invalid token", http.StatusBadRequest)
-			return
+			return nil, fmt.Errorf("Invalid token")
 		}
 
 		var alertDate time.Time
@@ -76,11 +79,10 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) {
 		if req.AlertAfter != 0 {
 			alertDate = time.Now().Add(time.Duration(req.AlertAfter) * time.Second)
 		} else if req.AlertDate != "" {
-			alertDate, err = time.Parse("2006-01-02T15:04:05Z", req.AlertDate)
+			alertDate, err = time.Parse(time.RFC3339, req.AlertDate)
 
 			if err != nil {
-				http.Error(w, "Invalid date format", http.StatusBadRequest)
-				return
+				return nil, fmt.Errorf("Invalid date format")
 			}
 		}
 
@@ -88,10 +90,16 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) {
 
 		alertID := h.stg.CreateAlert(alert)
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
+
 		log.Printf("%d seconds later", seconds)
 
 		h.alt.AddAlert(alertID, alertDate)
+
+		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
+		return res, nil
 	}
+
+	return nil, fmt.Errorf("Invalid method: %s", r.Method)
 }
 
 // ProcessAlert processes the alert
@@ -107,7 +115,7 @@ func (h *Handlers) ProcessAlert(alertID string) {
 }
 
 // CreateUser .
-func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	if r.Method == "POST" {
 		req := &CreateUserRequest{}
 
@@ -116,13 +124,11 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Println(err)
-			fmt.Fprintf(w, "invalid format")
-			return
+			return nil, fmt.Errorf("Invalid format")
 		}
 
 		if req.Name == nil || req.Email == nil {
-			fmt.Fprint(w, "invalid format")
-			return
+			return nil, fmt.Errorf("Missing fields")
 		}
 
 		user := &User{Name: *req.Name, Email: *req.Email}
@@ -131,9 +137,12 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Println(err)
-			fmt.Fprintln(w, err)
+			return nil, fmt.Errorf(err.Error())
 		}
 
-		SendSuccess(w, &CreateUserResponse{Token: token})
+		res := &CreateUserResponse{Token: token}
+		return res, nil
 	}
+
+	return nil, fmt.Errorf("Invalid method: %s", r.Method)
 }

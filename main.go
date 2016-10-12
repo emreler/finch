@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"gitlab.com/emreler/finch/handler"
 )
 
 // MongoConfig has config values for MongoDB
@@ -41,8 +43,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/alerts", http.HandlerFunc(handlers.CreateAlert))
-	mux.Handle("/users", http.HandlerFunc(handlers.CreateUser))
+	mux.Handle("/alerts", handler.FinchHandler(handlers.CreateAlert))
+	mux.Handle("/users", handler.FinchHandler(handlers.CreateUser))
 
 	go func() {
 		for {
