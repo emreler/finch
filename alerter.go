@@ -5,6 +5,8 @@ import (
 	"time"
 
 	redis "gopkg.in/redis.v4"
+
+	"gitlab.com/emreler/finch/config"
 )
 
 // Alerter is the struct for alerting on event times
@@ -14,7 +16,7 @@ type Alerter struct {
 }
 
 // NewAlerter creates and returns new Alerter instance
-func NewAlerter(config RedisConfig, c *chan string) *Alerter {
+func NewAlerter(config config.RedisConfig, c *chan string) *Alerter {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Addr,
 		Password: config.Pwd,

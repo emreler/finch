@@ -110,7 +110,11 @@ func (h *Handlers) ProcessAlert(alertID string) {
 
 	if alert.Channel == TypeHTTP {
 		h := new(channel.HttpChannel)
-		h.Notify(alert.URL, alert.Data)
+		err := h.Notify(alert.URL, alert.Data)
+
+		if err != nil {
+			log.Printf("Error while notifying with HTTP channel. %s", err.Error())
+		}
 	}
 }
 

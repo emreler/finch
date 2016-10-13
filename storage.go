@@ -8,6 +8,8 @@ import (
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	"gitlab.com/emreler/finch/config"
 )
 
 // Storage struct is used for storeing persistant data of alerts
@@ -16,7 +18,7 @@ type Storage struct {
 }
 
 // NewStorage creates and returns new Storage instance
-func NewStorage(url MongoConfig) *Storage {
+func NewStorage(url config.MongoConfig) *Storage {
 	ses, err := mgo.Dial(string(url))
 
 	if err != nil {
