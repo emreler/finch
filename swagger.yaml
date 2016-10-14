@@ -58,24 +58,30 @@ paths:
             properties:
               token:
                 type: string
+                description: Token generated using the /users endpoint.
               name:
                 type: string
+                description: An identifier for alert.
               channel:
                 type: string
                 enum:
                   - http
               url:
                 type: string
+                description: Required if channel is http. URL to send the requests to.
               data:
                 type: string
-              alertData:
-                type: string
+                description: Plain text to post with the request body.
               alertAfter:
                 type: integer
                 format: int32
+                description: Send the alert after x seconds. Overrides alertDate.
+              alertDate:
+                type: string
+                description: Send the alert at specified ISO 8601 date.
               repeatEvery:
                 type: integer
-                format: int32
+                description: Repeat the alert every x seconds.
       responses:
         200:
           description: Generated user token
