@@ -1,31 +1,71 @@
 package channel
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+
+	"gitlab.com/emreler/finch/models"
+)
+
+const (
+	methodGet    = "GET"
+	methodPost   = "POST"
+	contentPlain = "text/plain"
+	contentJSON  = "application/json"
+	contentForm  = "application/x-www-form-urlencoded"
 )
 
 type HttpChannel struct {
 }
 
-func (h *HttpChannel) Notify(url string, data string) error {
-	resp, err := http.Post(url, "text/plain", strings.NewReader(data))
+func (h *HttpChannel) Notify(alert *models.Alert) error {
 
-	if err != nil {
-		return err
+	ValidMethods := map[string]bool{
+		methodGet:  true,
+		methodPost: true,
+	}
+
+	ValidContentTypes := map[string]bool{
+		contentPlain: true,
+		contentJSON:  true,
+		contentForm:  true,
+	}
+	if alert.Method == "" {
+		alert.Method = methodGet
+	}
+
+	if !ValidMethods[alert.Method] {
+		return fmt.Errorf("Invalid method %s", alert.Method)
+	}
+
+	if alert.ContentType == "" {
+		alert.ContentType = contentPlain
+	}
+
+	if !ValidContentTypes[alert.ContentType] {
+		return fmt.Errorf("Invalid contentType %s", alert.ContentType)
+	}
+
+	var resp *http.Response
+	var err error
+
+	if alert.Method == methodGet {
+		resp, err = http.Get(alert.URL)
+	} else if alert.Method == methodPost {
+		resp, err = http.Post(alert.URL, alert.ContentType, strings.NewReader(alert.Data))
 	}
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
+	var body []byte
+	if body, err = ioutil.ReadAll(resp.Body); err != nil {
 		return err
 	}
 
-	log.Printf("Response from %s: %s", url, string(body))
+	log.Printf("Response for %s request to %s: %s", alert.Method, alert.URL, string(body))
 
 	return nil
 }

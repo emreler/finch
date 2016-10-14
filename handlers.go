@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gitlab.com/emreler/finch/channel"
+	"gitlab.com/emreler/finch/models"
 )
 
 const (
@@ -107,10 +108,19 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 			}
 		}
 
-		alert := &Alert{Name: req.Name, AlertDate: alertDate, Channel: req.Channel, URL: req.URL, Data: req.Data, User: *userID}
+		alert := &models.Alert{
+			Name:        req.Name,
+			AlertDate:   alertDate,
+			Channel:     req.Channel,
+			URL:         req.URL,
+			Method:      req.Method,
+			ContentType: req.ContentType,
+			Data:        req.Data,
+			User:        *userID,
+		}
 
 		if req.RepeatEvery > 0 {
-			alert.Schedule = &Schedule{RepeatEvery: req.RepeatEvery}
+			alert.Schedule = &models.Schedule{RepeatEvery: req.RepeatEvery}
 		}
 
 		alertID := h.stg.CreateAlert(alert)
@@ -135,7 +145,7 @@ func (h *Handlers) ProcessAlert(alertID string) {
 
 	if alert.Channel == TypeHTTP {
 		httpChannel := &channel.HttpChannel{}
-		err := httpChannel.Notify(alert.URL, alert.Data)
+		err := httpChannel.Notify(alert)
 
 		if err != nil {
 			log.Printf("Error while notifying with HTTP channel. %s", err.Error())

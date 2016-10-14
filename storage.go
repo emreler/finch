@@ -4,12 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"log"
-	"time"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"gitlab.com/emreler/finch/config"
+	"gitlab.com/emreler/finch/models"
 )
 
 // Storage struct is used for storeing persistant data of alerts
@@ -26,22 +26,6 @@ func NewStorage(url config.MongoConfig) *Storage {
 	}
 
 	return &Storage{Session: ses}
-}
-
-type Schedule struct {
-	RepeatEvery int
-}
-
-// Alert struct represents alert data stored in storage
-type Alert struct {
-	ID        bson.ObjectId `bson:"_id"`
-	Name      string
-	AlertDate time.Time
-	Channel   string
-	URL       string
-	Data      string
-	Schedule  *Schedule
-	User      bson.ObjectId
 }
 
 // User .
@@ -87,7 +71,7 @@ func (s *Storage) CreateUser(user *User) (string, error) {
 }
 
 // CreateAlert adds new alert to storage
-func (s *Storage) CreateAlert(a *Alert) string {
+func (s *Storage) CreateAlert(a *models.Alert) string {
 	a.ID = bson.NewObjectId()
 	err := s.Session.DB("tmpmail-dev").C("alerts").Insert(a)
 
@@ -99,10 +83,10 @@ func (s *Storage) CreateAlert(a *Alert) string {
 }
 
 // GetAlert Finds and returns alert data from storage
-func (s *Storage) GetAlert(alertID string) *Alert {
+func (s *Storage) GetAlert(alertID string) *models.Alert {
 	ID := bson.ObjectIdHex(alertID)
 
-	alert := &Alert{}
+	alert := &models.Alert{}
 	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
