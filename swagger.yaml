@@ -76,10 +76,10 @@ paths:
                   - POST
               contentType:
                 type: string
-                  enum:
-                    - text/plain
-                    - application/json
-                    - application/x-www-form-urlencoded
+                enum:
+                  - text/plain
+                  - application/json
+                  - application/x-www-form-urlencoded
               data:
                 type: string
                 description: Plain text to post with the request body.
