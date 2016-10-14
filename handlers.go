@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"gitlab.com/emreler/finch/channel"
@@ -34,10 +35,25 @@ type CreateAlertRequest struct {
 	Name        string `json:"name"`
 	Channel     string `json:"channel"`
 	URL         string `json:"url"`
+	Method      string `json:"method"`
+	ContentType string `json:"contentType"`
 	Data        string `json:"data"`
 	AlertDate   string `json:"alertDate"`
 	AlertAfter  int    `json:"alertAfter"`
 	RepeatEvery int    `json:"repeatEvery"`
+}
+
+func (r *CreateAlertRequest) Validate() error {
+	if r.Channel == TypeHTTP {
+		if match, _ := regexp.Match("^(http://|https://)", []byte(r.URL)); !match {
+			return fmt.Errorf("url must be present in the http(s)://domain.com format")
+		}
+
+		if match, _ := regexp.Match("^(http://|https://)(localhost|127.0.0.1|172.17)", []byte(r.URL)); match {
+			return fmt.Errorf("url can't be a local pointing address")
+		}
+	}
+	return nil
 }
 
 // CreateAlertResponse .
@@ -62,11 +78,15 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 		req := &CreateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&req)
 
-		if err != nil {
+		if err := decoder.Decode(&req); err != nil {
 			log.Println(err)
 			return nil, fmt.Errorf("Invalid format")
+		}
+
+		if err := req.Validate(); err != nil {
+			log.Println(err)
+			return nil, err
 		}
 
 		userID, err := h.stg.CheckToken(req.Token)
