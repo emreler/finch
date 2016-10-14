@@ -1,0 +1,82 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Finch API
+  description: Finch API Reference
+  version: "0.1.0"
+# the domain of the service
+host: api.usefinch.co
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /users:
+    post:
+      summary: Create new user
+      parameters:
+        - name: body
+          in: body
+          description: User definition
+          required: true
+          schema:
+            type: object
+            required:
+              - name
+              - email
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+      responses:
+        200:
+          description: Generated user token
+          examples:
+            application/json:
+              status: success
+              data:
+                token: ABXpX39Wy8mEjy_i6h57NrMQwT69i9zZqn7gvajfA7k=
+  /alerts:
+    post:
+      summary: Create new alert
+      parameters:
+        - name: body
+          in: body
+          description: Alert definition
+          required: true
+          schema:
+            type: object
+            required:
+              - token
+              - name
+              - channel
+            properties:
+              token:
+                type: string
+              name:
+                type: string
+              channel:
+                type: string
+                enum:
+                  - http
+              url:
+                type: string
+              data:
+                type: string
+              alertData:
+                type: string
+              alertAfter:
+                type: integer
+                format: int32
+
+      responses:
+        200:
+          description: Generated user token
+          examples:
+            application/json:
+              status: success
