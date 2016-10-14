@@ -28,6 +28,10 @@ func NewStorage(url config.MongoConfig) *Storage {
 	return &Storage{Session: ses}
 }
 
+type Schedule struct {
+	RepeatEvery int
+}
+
 // Alert struct represents alert data stored in storage
 type Alert struct {
 	ID        bson.ObjectId `bson:"_id"`
@@ -36,6 +40,7 @@ type Alert struct {
 	Channel   string
 	URL       string
 	Data      string
+	Schedule  *Schedule
 	User      bson.ObjectId
 }
 
@@ -97,7 +102,7 @@ func (s *Storage) CreateAlert(a *Alert) string {
 func (s *Storage) GetAlert(alertID string) *Alert {
 	ID := bson.ObjectIdHex(alertID)
 
-	alert := new(Alert)
+	alert := &Alert{}
 	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {

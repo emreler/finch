@@ -30,13 +30,14 @@ func InitHandlers(stg *Storage, alt *Alerter) *Handlers {
 
 // CreateAlertRequest .
 type CreateAlertRequest struct {
-	Token      string `json:"token"`
-	Name       string `json:"name"`
-	Channel    string `json:"channel"`
-	URL        string `json:"url"`
-	Data       string `json:"data"`
-	AlertDate  string `json:"alertDate"`
-	AlertAfter int    `json:"alertAfter"`
+	Token       string `json:"token"`
+	Name        string `json:"name"`
+	Channel     string `json:"channel"`
+	URL         string `json:"url"`
+	Data        string `json:"data"`
+	AlertDate   string `json:"alertDate"`
+	AlertAfter  int    `json:"alertAfter"`
+	RepeatEvery int    `json:"repeatEvery"`
 }
 
 // CreateAlertResponse .
@@ -88,6 +89,10 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 
 		alert := &Alert{Name: req.Name, AlertDate: alertDate, Channel: req.Channel, URL: req.URL, Data: req.Data, User: *userID}
 
+		if req.RepeatEvery > 0 {
+			alert.Schedule = &Schedule{RepeatEvery: req.RepeatEvery}
+		}
+
 		alertID := h.stg.CreateAlert(alert)
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 
@@ -109,11 +114,17 @@ func (h *Handlers) ProcessAlert(alertID string) {
 	log.Printf("Got %+v", alert)
 
 	if alert.Channel == TypeHTTP {
-		h := new(channel.HttpChannel)
-		err := h.Notify(alert.URL, alert.Data)
+		httpChannel := &channel.HttpChannel{}
+		err := httpChannel.Notify(alert.URL, alert.Data)
 
 		if err != nil {
 			log.Printf("Error while notifying with HTTP channel. %s", err.Error())
+		}
+
+		if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
+			nextAlertDate := time.Now().Add(time.Duration(alert.Schedule.RepeatEvery) * time.Second)
+			log.Printf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate)
+			h.alt.AddAlert(alertID, nextAlertDate)
 		}
 	}
 }

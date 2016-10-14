@@ -73,7 +73,9 @@ paths:
               alertAfter:
                 type: integer
                 format: int32
-
+              repeatEvery:
+                type: integer
+                format: int32
       responses:
         200:
           description: Generated user token
