@@ -1,4 +1,4 @@
 /config.json
 /config.test.json
 /finch
-
+.DS_Store

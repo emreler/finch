@@ -25,6 +25,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.Handle("/", http.FileServer(http.Dir("web")))
 	mux.Handle(prefix+"/alerts", handler.FinchHandler(handlers.CreateAlert))
 	mux.Handle(prefix+"/users", handler.FinchHandler(handlers.CreateUser))
 
