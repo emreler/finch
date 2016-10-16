@@ -14,12 +14,35 @@
   <link rel="stylesheet" href="css/skeleton.css">
 
   <link rel="icon" type="image/png" href="images/favicon.ico">
+
+  <style>
+  div#logo img {
+    width: 100%;
+  }
+  @media (min-width: 550px) {
+    div#header {
+      margin-top: 25%;
+    }
+
+    div#logo {
+      margin-top: 25%;
+    }
+  }
+  @media (max-width: 549px) {
+    div#logo img {
+      width: 25%;
+    }
+  }
+  </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" style="margin-top: 2em">
     <div class="row">
-      <div class="twelve columns" style="margin-top: 25%">
-        <img src="images/finch.svg" style="width: 128px">
+      <div class="two columns" id="logo">
+        <img src="images/finch.svg">
+      </div>
+      <div class="ten columns" id="header">
+
         <h1>Finch</h1>
         <h4>A simple scheduler for your apps</h4>
         <p>
