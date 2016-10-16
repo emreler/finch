@@ -22,7 +22,6 @@ type HttpChannel struct {
 }
 
 func (h *HttpChannel) Notify(alert *models.Alert) error {
-
 	ValidMethods := map[string]bool{
 		methodGet:  true,
 		methodPost: true,
@@ -33,6 +32,7 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 		contentJSON:  true,
 		contentForm:  true,
 	}
+
 	if alert.Method == "" {
 		alert.Method = methodGet
 	}

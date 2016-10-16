@@ -1,25 +1,33 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 
 	"gitlab.com/emreler/finch/config"
 	"gitlab.com/emreler/finch/handler"
+	"gitlab.com/emreler/finch/logger"
 )
 
 const prefix = "/v1"
+const defaultConfigPath = "/etc/finch/config.json"
 
 func main() {
-	config := config.NewConfig()
+	configPath := flag.String("config", defaultConfigPath, "Path of config.json file")
+	flag.Parse()
+
+	config := config.NewConfig(*configPath)
 
 	storage := NewStorage(config.Mongo)
 
 	c := make(chan string)
 	alerter := NewAlerter(config.Redis, &c)
 
-	handlers := InitHandlers(storage, alerter)
+	logger := logger.NewLogger(config.Logentries)
+
+	handlers := InitHandlers(storage, alerter, logger)
 
 	alerter.StartListening()
 

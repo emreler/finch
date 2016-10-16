@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"time"
 
 	"gitlab.com/emreler/finch/channel"
+	"gitlab.com/emreler/finch/logger"
 	"gitlab.com/emreler/finch/models"
 )
 
@@ -19,13 +19,14 @@ const (
 
 // Handlers .
 type Handlers struct {
-	stg *Storage
-	alt *Alerter
+	stg    *Storage
+	alt    *Alerter
+	logger *logger.Logger
 }
 
 // InitHandlers initializes handlers
-func InitHandlers(stg *Storage, alt *Alerter) *Handlers {
-	h := &Handlers{stg: stg, alt: alt}
+func InitHandlers(stg *Storage, alt *Alerter, logger *logger.Logger) *Handlers {
+	h := &Handlers{stg: stg, alt: alt, logger: logger}
 
 	return h
 }
@@ -81,12 +82,12 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 		decoder := json.NewDecoder(r.Body)
 
 		if err := decoder.Decode(&req); err != nil {
-			log.Println(err)
+			h.logger.Error(err)
 			return nil, fmt.Errorf("Invalid format")
 		}
 
 		if err := req.Validate(); err != nil {
-			log.Println(err)
+			h.logger.Error(err)
 			return nil, err
 		}
 
@@ -126,7 +127,7 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 		alertID := h.stg.CreateAlert(alert)
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 
-		log.Printf("%d seconds later", seconds)
+		h.logger.Info(fmt.Sprintf("%d seconds later", seconds))
 
 		h.alt.AddAlert(alertID, alertDate)
 
@@ -139,21 +140,20 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 
 // ProcessAlert processes the alert
 func (h *Handlers) ProcessAlert(alertID string) {
-	log.Printf("Getting %s\n", alertID)
+	h.logger.Info(fmt.Sprintf("Getting %s", alertID))
 	alert := h.stg.GetAlert(alertID)
-	log.Printf("Got %+v", alert)
 
 	if alert.Channel == TypeHTTP {
 		httpChannel := &channel.HttpChannel{}
 		err := httpChannel.Notify(alert)
 
 		if err != nil {
-			log.Printf("Error while notifying with HTTP channel. %s", err.Error())
+			h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
 		}
 
 		if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
 			nextAlertDate := time.Now().Add(time.Duration(alert.Schedule.RepeatEvery) * time.Second)
-			log.Printf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate)
+			h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate))
 			h.alt.AddAlert(alertID, nextAlertDate)
 		}
 	}
@@ -168,7 +168,7 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 		err := decoder.Decode(&req)
 
 		if err != nil {
-			log.Println(err)
+			h.logger.Error(err)
 			return nil, fmt.Errorf("Invalid format")
 		}
 
@@ -181,7 +181,7 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 		token, err := h.stg.CreateUser(user)
 
 		if err != nil {
-			log.Println(err)
+			h.logger.Error(err)
 			return nil, fmt.Errorf(err.Error())
 		}
 

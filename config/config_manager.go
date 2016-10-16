@@ -6,10 +6,13 @@ import (
 	"log"
 )
 
-const configFile = "config.json"
+const defaultConfigPath = "config.json"
 
 // MongoConfig has config values for MongoDB
 type MongoConfig string
+
+// LogentriesConfig has config values for Logentries
+type LogentriesConfig string
 
 // RedisConfig has config values for Redis
 type RedisConfig struct {
@@ -19,16 +22,21 @@ type RedisConfig struct {
 
 // Config struct defines the config structure
 type Config struct {
-	Mongo MongoConfig `json:"mongo"`
-	Redis RedisConfig `json:"redis"`
+	Mongo      MongoConfig      `json:"mongo"`
+	Redis      RedisConfig      `json:"redis"`
+	Logentries LogentriesConfig `json:"Logentries"`
 }
 
 // NewConfig parses config file and return Config struct
-func NewConfig() *Config {
-	file, err := ioutil.ReadFile(configFile)
+func NewConfig(configPath string) *Config {
+	if configPath == "" {
+		configPath = defaultConfigPath
+	}
+
+	file, err := ioutil.ReadFile(configPath)
 
 	if err != nil {
-		log.Fatalf("Config file '%s' file not found", configFile)
+		log.Fatalf("Config file '%s' file not found", configPath)
 	}
 
 	config := &Config{}
