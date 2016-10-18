@@ -40,8 +40,15 @@ paths:
             application/json:
               status: success
               data:
-                token: ABXpX39Wy8mEjy_i6h57NrMQwT69i9zZqn7gvajfA7k=
+                token: Some JWT
   /alerts:
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+        default: "Bearer "
+        description: "JSON Web Token (JWT) obtained from /users endpoint."
     post:
       summary: Create new alert
       parameters:
@@ -52,13 +59,8 @@ paths:
           schema:
             type: object
             required:
-              - token
-              - name
               - channel
             properties:
-              token:
-                type: string
-                description: Token generated using the /users endpoint.
               name:
                 type: string
                 description: An identifier for alert.
