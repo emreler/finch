@@ -80,7 +80,7 @@ type CreateUserResponse struct {
 }
 
 // CreateAlert creates new alert
-func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	authorization := r.Header.Get("Authorization")
 
 	re := regexp.MustCompile("Bearer (.*)")
@@ -140,7 +140,13 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 			alert.Schedule = &models.Schedule{RepeatEvery: req.RepeatEvery}
 		}
 
-		alertID := h.stg.CreateAlert(alert)
+		alertID, err := h.stg.CreateAlert(alert)
+
+		if err != nil {
+			h.logger.Error(err)
+			return nil, err
+		}
+
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 
 		h.logger.Info(fmt.Sprintf("%d seconds later", seconds))

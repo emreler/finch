@@ -32,31 +32,49 @@ func (s *Storage) CreateUser(user *models.User) (string, error) {
 
 	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
 
-	return user.ID.Hex(), err
+	if err != nil {
+		return "", nil
+	}
+
+	return user.ID.Hex(), nil
 }
 
 // CreateAlert adds new alert to storage
-func (s *Storage) CreateAlert(a *models.Alert) string {
+func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
 	a.ID = bson.NewObjectId()
 	err := s.Session.DB("tmpmail-dev").C("alerts").Insert(a)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return a.ID.Hex()
+	return a.ID.Hex(), nil
 }
 
 // GetAlert Finds and returns alert data from storage
-func (s *Storage) GetAlert(alertID string) *models.Alert {
+func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	ID := bson.ObjectIdHex(alertID)
 
 	alert := &models.Alert{}
 	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return alert
+	return alert, nil
+}
+
+func (s *Storage) GetUserAlerts(userID string) ([]models.Alert, error) {
+	ID := bson.ObjectIdHex(userID)
+
+	var res []models.Alert
+
+	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

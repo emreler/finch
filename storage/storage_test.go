@@ -1,38 +1,77 @@
 package storage
 
 import (
-	"log"
+	"os"
 	"testing"
+	"time"
+
+	"gitlab.com/emreler/finch/config"
+	"gitlab.com/emreler/finch/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
-func TestCreateAlert(t *testing.T) {
-	x := &Alert{Name: "emre"}
-	s := NewStorage("mongodb://robocop:6Hi3QhgfWfmM@ds013162.mlab.com:13162/tmpmail-dev")
-	id := s.CreateAlert(x)
-	log.Println(id)
+var s *Storage
+var userID string
+var alertID string
 
-	a := s.GetAlert("57c1f71289c75aed0825c405")
-	log.Println(a)
-}
+func TestMain(m *testing.M) {
+	config := config.NewConfig("../config.json")
 
-func TestCheckToken(t *testing.T) {
-	s := NewStorage("mongodb://robocop:6Hi3QhgfWfmM@ds013162.mlab.com:13162/tmpmail-dev")
-	res, err := s.CheckToken("gJ292HobqSLA2BVSX4aj-hCM0reGKPSqg-gmM4w-a0M=")
-
-	if err != nil {
-		log.Fatal("User not found")
-	}
-
-	log.Println(res)
+	s = NewStorage(config.Mongo)
+	os.Exit(m.Run())
 }
 
 func TestCreateUser(t *testing.T) {
-	s := NewStorage("mongodb://robocop:6Hi3QhgfWfmM@ds013162.mlab.com:13162/tmpmail-dev")
-	token, err := s.CreateUser(&User{Name: "emre", Email: "emrekayan@gmail.com"})
+	user := &models.User{Name: "foo", Email: "bar@usefinch.co"}
+
+	ID, err := s.CreateUser(user)
 
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+		return
 	}
 
-	log.Printf("Ok. Token: %s", token)
+	userID = ID
+}
+
+func TestCreateAlert(t *testing.T) {
+	alert := &models.Alert{Name: "foo's alert", User: bson.ObjectIdHex(userID), AlertDate: time.Now().Add(10 * time.Second), Data: "somedata"}
+
+	ID, err := s.CreateAlert(alert)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	alertID = ID
+}
+
+func TestGetAlert(t *testing.T) {
+	alert, err := s.GetAlert(alertID)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if alert.Data != "somedata" {
+		t.Errorf("Alert data is wrong")
+		return
+	}
+}
+
+func TestGetUserAlerts(t *testing.T) {
+	alerts, err := s.GetUserAlerts(userID)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if len(alerts) == 1 && alerts[0].Data == "somedata" {
+		return
+	}
+
+	t.Errorf("Invalid user alerts data")
 }
