@@ -1,4 +1,4 @@
-package main
+package storage
 
 import (
 	"log"
@@ -26,27 +26,8 @@ func NewStorage(url config.MongoConfig) *Storage {
 	return &Storage{Session: ses}
 }
 
-// User .
-type User struct {
-	ID    bson.ObjectId `bson:"_id"`
-	Name  string
-	Email string
-}
-
-// CheckToken checks token
-func (s *Storage) CheckToken(token string) (*bson.ObjectId, error) {
-	user := &User{}
-	err := s.Session.DB("tmpmail-dev").C("users").Find(bson.M{"token": token}).One(user)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &user.ID, nil
-}
-
 // CreateUser creates new user
-func (s *Storage) CreateUser(user *User) (string, error) {
+func (s *Storage) CreateUser(user *models.User) (string, error) {
 	user.ID = bson.NewObjectId()
 
 	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)

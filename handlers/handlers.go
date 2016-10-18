@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -13,6 +13,7 @@ import (
 	"gitlab.com/emreler/finch/channel"
 	"gitlab.com/emreler/finch/logger"
 	"gitlab.com/emreler/finch/models"
+	"gitlab.com/emreler/finch/storage"
 )
 
 const (
@@ -22,17 +23,15 @@ const (
 
 // Handlers .
 type Handlers struct {
-	stg    *Storage
-	alt    *Alerter
+	stg    *storage.Storage
+	alt    *storage.Alerter
 	logger *logger.Logger
 	auth   *auth.Auth
 }
 
 // InitHandlers initializes handlers
-func InitHandlers(stg *Storage, alt *Alerter, logger *logger.Logger, auth *auth.Auth) *Handlers {
-	h := &Handlers{stg: stg, alt: alt, logger: logger, auth: auth}
-
-	return h
+func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logger, auth *auth.Auth) *Handlers {
+	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth}
 }
 
 // CreateAlertRequest .
@@ -197,7 +196,7 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 			return nil, fmt.Errorf("Missing fields")
 		}
 
-		user := &User{Name: *req.Name, Email: *req.Email}
+		user := &models.User{Name: *req.Name, Email: *req.Email}
 
 		userID, err := h.stg.CreateUser(user)
 
