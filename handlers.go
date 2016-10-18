@@ -7,6 +7,9 @@ import (
 	"regexp"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
+	"gitlab.com/emreler/finch/auth"
 	"gitlab.com/emreler/finch/channel"
 	"gitlab.com/emreler/finch/logger"
 	"gitlab.com/emreler/finch/models"
@@ -22,11 +25,12 @@ type Handlers struct {
 	stg    *Storage
 	alt    *Alerter
 	logger *logger.Logger
+	auth   *auth.Auth
 }
 
 // InitHandlers initializes handlers
-func InitHandlers(stg *Storage, alt *Alerter, logger *logger.Logger) *Handlers {
-	h := &Handlers{stg: stg, alt: alt, logger: logger}
+func InitHandlers(stg *Storage, alt *Alerter, logger *logger.Logger, auth *auth.Auth) *Handlers {
+	h := &Handlers{stg: stg, alt: alt, logger: logger, auth: auth}
 
 	return h
 }
@@ -45,6 +49,7 @@ type CreateAlertRequest struct {
 	RepeatEvery int    `json:"repeatEvery"`
 }
 
+// Validate validates request
 func (r *CreateAlertRequest) Validate() error {
 	if r.Channel == TypeHTTP {
 		if match, _ := regexp.Match("^(http://|https://)", []byte(r.URL)); !match {
@@ -71,30 +76,42 @@ type CreateUserRequest struct {
 
 // CreateUserResponse .
 type CreateUserResponse struct {
-	Token string `json:"token"`
+	Token   string `json:"token"`
+	Expires int64  `json:"expires"`
 }
 
 // CreateAlert creates new alert
 func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+	authorization := r.Header.Get("Authorization")
+
+	re := regexp.MustCompile("Bearer (.*)")
+	match := re.FindStringSubmatch(authorization)
+
+	if len(match) != 2 {
+		return nil, fmt.Errorf("No token found in requst")
+	}
+
+	tokenString := match[1]
+
+	userID, err := h.auth.ValidateToken(tokenString)
+
+	if err != nil {
+		return nil, err
+	}
+
 	if r.Method == "POST" {
 		req := &CreateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
 
-		if err := decoder.Decode(&req); err != nil {
+		if err = decoder.Decode(&req); err != nil {
 			h.logger.Error(err)
 			return nil, fmt.Errorf("Invalid format")
 		}
 
-		if err := req.Validate(); err != nil {
+		if err = req.Validate(); err != nil {
 			h.logger.Error(err)
 			return nil, err
-		}
-
-		userID, err := h.stg.CheckToken(req.Token)
-
-		if err != nil {
-			return nil, fmt.Errorf("Invalid token")
 		}
 
 		var alertDate time.Time
@@ -117,7 +134,7 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 			Method:      req.Method,
 			ContentType: req.ContentType,
 			Data:        req.Data,
-			User:        *userID,
+			User:        bson.ObjectIdHex(userID),
 		}
 
 		if req.RepeatEvery > 0 {
@@ -133,9 +150,13 @@ func (h *Handlers) CreateAlert(w http.ResponseWriter, r *http.Request) (interfac
 
 		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
 		return res, nil
+	} else if r.Method == "GET" {
+
+	} else {
+		return nil, fmt.Errorf("Invalid method: %s", r.Method)
 	}
 
-	return nil, fmt.Errorf("Invalid method: %s", r.Method)
+	return nil, nil
 }
 
 // ProcessAlert processes the alert
@@ -178,14 +199,22 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 
 		user := &User{Name: *req.Name, Email: *req.Email}
 
-		token, err := h.stg.CreateUser(user)
+		userID, err := h.stg.CreateUser(user)
 
 		if err != nil {
 			h.logger.Error(err)
-			return nil, fmt.Errorf(err.Error())
+			return nil, err
 		}
 
-		res := &CreateUserResponse{Token: token}
+		exp := time.Now().Add(24 * 365 * time.Hour)
+		tokenString, err := h.auth.GenerateToken(userID, exp)
+
+		if err != nil {
+			h.logger.Error(err)
+			return nil, err
+		}
+
+		res := &CreateUserResponse{Token: tokenString, Expires: exp.Unix()}
 		return res, nil
 	}
 

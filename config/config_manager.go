@@ -25,6 +25,7 @@ type Config struct {
 	Mongo      MongoConfig      `json:"mongo"`
 	Redis      RedisConfig      `json:"redis"`
 	Logentries LogentriesConfig `json:"Logentries"`
+	Secret     string           `json:"secret"`
 }
 
 // NewConfig parses config file and return Config struct

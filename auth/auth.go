@@ -30,7 +30,7 @@ func (a *Auth) GenerateToken(userID string, expire time.Time) (string, error) {
 	return tokenString, nil
 }
 
-func (a *Auth) ValidateToken(tokenString string, userID string) error {
+func (a *Auth) ValidateToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -40,24 +40,24 @@ func (a *Auth) ValidateToken(tokenString string, userID string) error {
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("Invalid token signature")
+		return "", fmt.Errorf("Invalid token signature")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
-		return fmt.Errorf("Invalid token body")
+		return "", fmt.Errorf("Invalid token body")
 	}
 
 	exp := time.Unix(int64(claims["exp"].(float64)), 0)
 
-	if claims["userID"] == userID && exp.After(time.Now()) {
-		return nil
+	if !exp.After(time.Now()) {
+		return "", fmt.Errorf("Invalid or expired token")
 	}
 
-	return fmt.Errorf("Invalid or expired token")
+	return claims["userID"].(string), nil
 }

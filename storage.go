@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"log"
 
 	"gopkg.in/mgo.v2"
@@ -33,19 +31,6 @@ type User struct {
 	ID    bson.ObjectId `bson:"_id"`
 	Name  string
 	Email string
-	Token string
-}
-
-func generateToken() string {
-	b := make([]byte, 32)
-
-	_, err := rand.Read(b)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return base64.URLEncoding.EncodeToString(b)
 }
 
 // CheckToken checks token
@@ -63,11 +48,10 @@ func (s *Storage) CheckToken(token string) (*bson.ObjectId, error) {
 // CreateUser creates new user
 func (s *Storage) CreateUser(user *User) (string, error) {
 	user.ID = bson.NewObjectId()
-	user.Token = generateToken()
 
 	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
 
-	return user.Token, err
+	return user.ID.Hex(), err
 }
 
 // CreateAlert adds new alert to storage

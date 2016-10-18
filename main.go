@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"gitlab.com/emreler/finch/auth"
 	"gitlab.com/emreler/finch/config"
 	"gitlab.com/emreler/finch/handler"
 	"gitlab.com/emreler/finch/logger"
@@ -18,22 +19,22 @@ func main() {
 	configPath := flag.String("config", defaultConfigPath, "Path of config.json file")
 	flag.Parse()
 
+	c := make(chan string)
+
 	config := config.NewConfig(*configPath)
 
+	auth := auth.NewAuth(config.Secret)
 	storage := NewStorage(config.Mongo)
-
-	c := make(chan string)
 	alerter := NewAlerter(config.Redis, &c)
-
 	logger := logger.NewLogger(config.Logentries)
-
-	handlers := InitHandlers(storage, alerter, logger)
+	handlers := InitHandlers(storage, alerter, logger, auth)
 
 	alerter.StartListening()
 
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir("web")))
+	mux.Handle(prefix+"/alerts/", handler.FinchHandler(handlers.CreateAlert))
 	mux.Handle(prefix+"/alerts", handler.FinchHandler(handlers.CreateAlert))
 	mux.Handle(prefix+"/users", handler.FinchHandler(handlers.CreateUser))
 

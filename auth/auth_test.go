@@ -32,7 +32,7 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	err := auth.ValidateToken(tokenString, "123")
+	err := auth.ValidateToken(tokenString)
 
 	if err != nil {
 		t.Error(err)
