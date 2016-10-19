@@ -167,7 +167,12 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 // ProcessAlert processes the alert
 func (h *Handlers) ProcessAlert(alertID string) {
 	h.logger.Info(fmt.Sprintf("Getting %s", alertID))
-	alert := h.stg.GetAlert(alertID)
+	alert, err := h.stg.GetAlert(alertID)
+
+	if err != nil {
+		h.logger.Error(err)
+		return
+	}
 
 	if alert.Channel == TypeHTTP {
 		httpChannel := &channel.HttpChannel{}
