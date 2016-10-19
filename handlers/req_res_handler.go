@@ -28,7 +28,7 @@ func (fn FinchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Response is the general response struct
 type Response struct {
 	Status string      `json:"status"`
-	Data   interface{} `json:"data"`
+	Data   interface{} `json:"data,omitempty"`
 }
 
 // SendSuccess sends Response with {status: "success"}

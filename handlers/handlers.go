@@ -85,6 +85,10 @@ type GetAlertsResponse struct {
 	Count  int             `json:"count"`
 }
 
+type UpdateAlertRequest struct {
+	Enabled *bool `json:"enabled"`
+}
+
 func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	authorization := r.Header.Get("Authorization")
 
@@ -97,7 +101,7 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 
 	tokenString := match[1]
 
-	_, err := h.auth.ValidateToken(tokenString)
+	userID, err := h.auth.ValidateToken(tokenString)
 
 	if err != nil {
 		return nil, err
@@ -112,14 +116,41 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 
 	alertID := match[1]
 
+	alert, err := h.stg.GetAlert(alertID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if alert.User.Hex() != userID {
+		return nil, fmt.Errorf("Unauthorized request")
+	}
+
 	if r.Method == "GET" {
-		alert, err := h.stg.GetAlert(alertID)
+		return alert, nil
+	} else if r.Method == "PATCH" {
+		req := &UpdateAlertRequest{}
+
+		decoder := json.NewDecoder(r.Body)
+
+		if err = decoder.Decode(&req); err != nil {
+			h.logger.Error(err)
+			return nil, fmt.Errorf("Invalid format")
+		}
+
+		if req.Enabled == nil {
+			return nil, fmt.Errorf("Invalid format")
+		}
+
+		alert.Enabled = *req.Enabled
+
+		err := h.stg.UpdateAlert(alert)
 
 		if err != nil {
 			return nil, err
 		}
 
-		return alert, nil
+		return nil, nil
 	}
 
 	return nil, fmt.Errorf("Invalid method")
@@ -171,16 +202,15 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 			}
 		}
 
-		alert := &models.Alert{
-			Name:        req.Name,
-			AlertDate:   alertDate,
-			Channel:     req.Channel,
-			URL:         req.URL,
-			Method:      req.Method,
-			ContentType: req.ContentType,
-			Data:        req.Data,
-			User:        bson.ObjectIdHex(userID),
-		}
+		alert := models.NewAlert()
+		alert.Name = req.Name
+		alert.AlertDate = alertDate
+		alert.Channel = req.Channel
+		alert.URL = req.URL
+		alert.Method = req.Method
+		alert.ContentType = req.ContentType
+		alert.Data = req.Data
+		alert.User = bson.ObjectIdHex(userID)
 
 		if req.RepeatEvery > 0 {
 			alert.Schedule = &models.Schedule{RepeatEvery: req.RepeatEvery}
@@ -219,7 +249,6 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 
 // ProcessAlert processes the alert
 func (h *Handlers) ProcessAlert(alertID string) {
-	h.logger.Info(fmt.Sprintf("Getting %s", alertID))
 	alert, err := h.stg.GetAlert(alertID)
 
 	if err != nil {
@@ -227,19 +256,22 @@ func (h *Handlers) ProcessAlert(alertID string) {
 		return
 	}
 
-	if alert.Channel == TypeHTTP {
-		httpChannel := &channel.HttpChannel{}
-		err := httpChannel.Notify(alert)
+	if alert.Enabled == true {
+		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
+		if alert.Channel == TypeHTTP {
+			httpChannel := &channel.HttpChannel{}
+			err := httpChannel.Notify(alert)
 
-		if err != nil {
-			h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
+			if err != nil {
+				h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
+			}
 		}
+	}
 
-		if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
-			nextAlertDate := time.Now().Add(time.Duration(alert.Schedule.RepeatEvery) * time.Second)
-			h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate))
-			h.alt.AddAlert(alertID, nextAlertDate)
-		}
+	if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
+		nextAlertDate := time.Now().Add(time.Duration(alert.Schedule.RepeatEvery) * time.Second)
+		h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate))
+		h.alt.AddAlert(alertID, nextAlertDate)
 	}
 }
 

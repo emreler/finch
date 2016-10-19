@@ -32,6 +32,11 @@ func (a *Alerter) AddAlert(alertID string, alertDate time.Time) {
 	a.client.ExpireAt(alertID, alertDate)
 }
 
+// RemoveAlert removes alert
+func (a *Alerter) RemoveAlert(alertID string) {
+	a.client.Del(alertID)
+}
+
 // StartListening starts to listen from Redis for alerts
 func (a *Alerter) StartListening() {
 	go func() {

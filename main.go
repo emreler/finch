@@ -35,7 +35,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// serving homepage
 	mux.Handle("/", http.FileServer(http.Dir("web")))
+
+	// serving api
 	mux.Handle(prefix+"/alerts/", handlers.FinchHandler(hnd.AlertDetail))
 	mux.Handle(prefix+"/alerts", handlers.FinchHandler(hnd.Alerts))
 	mux.Handle(prefix+"/users", handlers.FinchHandler(hnd.CreateUser))
