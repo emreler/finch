@@ -29,7 +29,7 @@ type Handlers struct {
 	auth   *auth.Auth
 }
 
-// InitHandlers initializes handlers
+// NewHandlers initializes handlers
 func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logger, auth *auth.Auth) *Handlers {
 	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth}
 }
@@ -79,7 +79,13 @@ type CreateUserResponse struct {
 	Expires int64  `json:"expires"`
 }
 
-// CreateAlert creates new alert
+// GetAlertsResponse .
+type GetAlertsResponse struct {
+	Alerts []*models.Alert `json:"alerts"`
+	Count  int             `json:"count"`
+}
+
+// Alerts creates new alert
 func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	authorization := r.Header.Get("Authorization")
 
@@ -156,12 +162,19 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
 		return res, nil
 	} else if r.Method == "GET" {
+		alerts, err := h.stg.GetUserAlerts(userID)
 
+		if err != nil {
+			h.logger.Error(err)
+			return nil, err
+		}
+
+		res := &GetAlertsResponse{Alerts: alerts, Count: len(alerts)}
+
+		return res, nil
 	} else {
 		return nil, fmt.Errorf("Invalid method: %s", r.Method)
 	}
-
-	return nil, nil
 }
 
 // ProcessAlert processes the alert

@@ -65,16 +65,21 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	return alert, nil
 }
 
-func (s *Storage) GetUserAlerts(userID string) ([]models.Alert, error) {
+// GetUserAlerts .
+func (s *Storage) GetUserAlerts(userID string) ([]*models.Alert, error) {
 	ID := bson.ObjectIdHex(userID)
 
-	var res []models.Alert
+	var alerts []*models.Alert
 
-	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&res)
+	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&alerts)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	for _, alert := range alerts {
+		alert.AlertDate = alert.AlertDate.UTC()
+	}
+
+	return alerts, nil
 }
