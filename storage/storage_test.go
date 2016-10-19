@@ -13,6 +13,8 @@ import (
 var s *Storage
 var userID string
 var alertID string
+var alert *models.Alert
+var err error
 
 func TestMain(m *testing.M) {
 	config := config.NewConfig("../config.json")
@@ -32,6 +34,8 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	userID = ID
+
+	t.Logf("Created userID: %s", userID)
 }
 
 func TestCreateAlert(t *testing.T) {
@@ -45,10 +49,12 @@ func TestCreateAlert(t *testing.T) {
 	}
 
 	alertID = ID
+
+	t.Logf("Created alertID: %s", alertID)
 }
 
 func TestGetAlert(t *testing.T) {
-	alert, err := s.GetAlert(alertID)
+	alert, err = s.GetAlert(alertID)
 
 	if err != nil {
 		t.Error(err)
@@ -74,4 +80,20 @@ func TestGetUserAlerts(t *testing.T) {
 	}
 
 	t.Errorf("Invalid user alerts data")
+}
+
+func TestUpdateAlert(t *testing.T) {
+	alert.Data = "updated"
+
+	err = s.UpdateAlert(alert)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	testAlert, _ := s.GetAlert(alertID)
+
+	if testAlert.Data != "updated" {
+		t.Errorf("Updated alert has invalid data: %s", testAlert.Data)
+	}
 }

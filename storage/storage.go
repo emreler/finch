@@ -65,6 +65,17 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	return alert, nil
 }
 
+// UpdateAlert .
+func (s *Storage) UpdateAlert(alert *models.Alert) error {
+	err := s.Session.DB("tmpmail-dev").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetUserAlerts .
 func (s *Storage) GetUserAlerts(userID string) ([]*models.Alert, error) {
 	ID := bson.ObjectIdHex(userID)
