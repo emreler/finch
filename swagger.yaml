@@ -15,6 +15,43 @@ basePath: /v1
 produces:
   - application/json
 paths:
+  /alerts/{alertId}:
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+        default: "Bearer "
+        description: "JSON Web Token (JWT) obtained from /users endpoint."
+      - name: alertId
+        in: path
+        type: string
+        required: true
+        description: Alert ID
+    get:
+      summary: Get alert details
+      responses:
+        200:
+          description: Alert details
+    patch:
+      summary: Update alert
+      parameters:
+        - name: body
+          in: body
+          description: Fields to update
+          required: true
+          schema:
+            type: object
+            required:
+              - enabled
+            properties:
+              enabled:
+                type: boolean
+                default: true
+      responses:
+        200:
+          description: Success message
+
   /users:
     post:
       summary: Create new user
