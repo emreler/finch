@@ -14,7 +14,6 @@ var s *Storage
 var userID string
 var alertID string
 var alert *models.Alert
-var err error
 
 func TestMain(m *testing.M) {
 	config := config.NewConfig("../config.json")
@@ -39,7 +38,12 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestCreateAlert(t *testing.T) {
-	alert := &models.Alert{Name: "foo's alert", User: bson.ObjectIdHex(userID), AlertDate: time.Now().Add(10 * time.Second), Data: "somedata"}
+	alert = models.NewAlert()
+
+	alert.Name = "foo's alert"
+	alert.User = bson.ObjectIdHex(userID)
+	alert.AlertDate = time.Now().Add(10 * time.Second)
+	alert.Data = "somedata"
 
 	ID, err := s.CreateAlert(alert)
 
@@ -54,6 +58,8 @@ func TestCreateAlert(t *testing.T) {
 }
 
 func TestGetAlert(t *testing.T) {
+	var err error
+
 	alert, err = s.GetAlert(alertID)
 
 	if err != nil {
@@ -85,7 +91,7 @@ func TestGetUserAlerts(t *testing.T) {
 func TestUpdateAlert(t *testing.T) {
 	alert.Data = "updated"
 
-	err = s.UpdateAlert(alert)
+	err := s.UpdateAlert(alert)
 
 	if err != nil {
 		t.Error(err)
