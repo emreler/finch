@@ -85,6 +85,46 @@ type GetAlertsResponse struct {
 	Count  int             `json:"count"`
 }
 
+func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+	authorization := r.Header.Get("Authorization")
+
+	re := regexp.MustCompile("Bearer (.*)")
+	match := re.FindStringSubmatch(authorization)
+
+	if len(match) != 2 {
+		return nil, fmt.Errorf("No token found in requst")
+	}
+
+	tokenString := match[1]
+
+	_, err := h.auth.ValidateToken(tokenString)
+
+	if err != nil {
+		return nil, err
+	}
+
+	re = regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})$")
+	match = re.FindStringSubmatch(r.URL.Path)
+
+	if len(match) != 2 {
+		return nil, fmt.Errorf("Invalid URL")
+	}
+
+	alertID := match[1]
+
+	if r.Method == "GET" {
+		alert, err := h.stg.GetAlert(alertID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return alert, nil
+	}
+
+	return nil, fmt.Errorf("Invalid method")
+}
+
 // Alerts creates new alert
 func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	authorization := r.Header.Get("Authorization")
