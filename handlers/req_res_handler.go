@@ -11,7 +11,7 @@ type FinchHandler func(w http.ResponseWriter, r *http.Request) (interface{}, err
 func (fn FinchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "OPTIONS" {
-		w.Header().Set("Access-Control-Allow-Methods", "GET,POST")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
 
 		return
