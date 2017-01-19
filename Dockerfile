@@ -8,6 +8,6 @@ RUN go get
 
 RUN go install
 
-ENTRYPOINT finch --config=config.json
+ENTRYPOINT finch --config=/etc/finch/config.json
 
 EXPOSE 8081

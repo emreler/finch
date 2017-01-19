@@ -2,3 +2,5 @@
 /config.test.json
 /finch
 .DS_Store
+/redis-data
+/mongo-data
