@@ -6,8 +6,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"gitlab.com/emreler/finch/config"
-	"gitlab.com/emreler/finch/models"
+	"github.com/emreler/finch/config"
+	"github.com/emreler/finch/models"
 )
 
 // Storage struct is used for storeing persistant data of alerts

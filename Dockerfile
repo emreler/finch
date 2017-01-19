@@ -1,6 +1,6 @@
 FROM golang:1.7.1
 
-WORKDIR /go/src/gitlab.com/emreler/finch
+WORKDIR /go/src/github.com/emreler/finch
 
 ADD . .
 

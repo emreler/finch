@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/emreler/finch/config"
-	"gitlab.com/emreler/finch/models"
+	"github.com/emreler/finch/config"
+	"github.com/emreler/finch/models"
 	"gopkg.in/mgo.v2/bson"
 )
 

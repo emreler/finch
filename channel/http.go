@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.com/emreler/finch/models"
+	"github.com/emreler/finch/models"
 )
 
 const (

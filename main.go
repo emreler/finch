@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"gitlab.com/emreler/finch/auth"
-	"gitlab.com/emreler/finch/config"
-	"gitlab.com/emreler/finch/handlers"
-	"gitlab.com/emreler/finch/logger"
-	"gitlab.com/emreler/finch/storage"
+	"github.com/emreler/finch/auth"
+	"github.com/emreler/finch/config"
+	"github.com/emreler/finch/handlers"
+	"github.com/emreler/finch/logger"
+	"github.com/emreler/finch/storage"
 )
 
 const prefix = "/v1"

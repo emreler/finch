@@ -6,7 +6,7 @@ import (
 
 	redis "gopkg.in/redis.v4"
 
-	"gitlab.com/emreler/finch/config"
+	"github.com/emreler/finch/config"
 )
 
 // Alerter is the struct for alerting on event times

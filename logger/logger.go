@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/bsphere/le_go"
-	"gitlab.com/emreler/finch/config"
+	"github.com/emreler/finch/config"
 )
 
 // Logger .

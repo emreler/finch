@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.com/emreler/finch/config"
+	"github.com/emreler/finch/config"
 )
 
 type SomeStruct struct {

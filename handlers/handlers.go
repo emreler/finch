@@ -9,11 +9,11 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"gitlab.com/emreler/finch/auth"
-	"gitlab.com/emreler/finch/channel"
-	"gitlab.com/emreler/finch/logger"
-	"gitlab.com/emreler/finch/models"
-	"gitlab.com/emreler/finch/storage"
+	"github.com/emreler/finch/auth"
+	"github.com/emreler/finch/channel"
+	"github.com/emreler/finch/logger"
+	"github.com/emreler/finch/models"
+	"github.com/emreler/finch/storage"
 )
 
 const (
