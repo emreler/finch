@@ -1,0 +1,10 @@
+{
+  "mongo": "mongodb://mongo:27017/finch",
+  "redis": {
+    "addr": "redis:6379",
+    "pwd": ""
+  },
+  "host": "localhost:8081",
+  "logentries": "LOGENTRIES_KEY",
+  "secret": "SOME_KEY_FOR_YOUR_APP_KEEP_IT_SECRET"
+}
