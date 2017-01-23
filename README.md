@@ -11,7 +11,11 @@ For now it can send HTTP requests with GET, POST methods and request body of you
 You can use the Swagger page [here](http://swagger.usefinch.co/#/default) to check the endpoints, required fields, expected responses as well as making the actual API calls.
 
 ### Getting Access Token
-To use the API you will need an access token. You can create yourself one using the `/users` endpoint. As a response you will receive the token ([JWT](https://en.wikipedia.org/wiki/JSON_Web_Token)).
+To use the API you will need an access token. You can create yourself one using the `POST /users` endpoint. As a response you will receive the token ([JWT](https://en.wikipedia.org/wiki/JSON_Web_Token)).
 
 ### Authenticating API calls
 As you can see in the [Swagger](http://swagger.usefinch.co/#/default) page, all endpoints are excepting `Authorization` header. Value of the `Authorization` header must be in the format `Bearer ACCESS_TOKEN`, where `ACCESS_TOKEN` is the one obtained with the step above.
+
+## License
+
+[MIT](LICENSE)
