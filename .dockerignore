@@ -1,1 +1,5 @@
 config.json
+.git/
+mongo-data/
+redis-data/
+
