@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -71,6 +72,26 @@ type CreateAlertResponse struct {
 type CreateUserRequest struct {
 	Name  *string `json:"name"`
 	Email *string `json:"email"`
+}
+
+func (r *CreateUserRequest) Validate() error {
+	if r.Name == nil || r.Email == nil {
+		return fmt.Errorf("Missing fields")
+	}
+
+	*r.Name = strings.TrimSpace(*r.Name)
+	*r.Email = strings.TrimSpace(*r.Email)
+
+	if *r.Name == "" || *r.Email == "" {
+		return fmt.Errorf("'name' and 'email' can't be empty")
+	}
+
+	re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+$`)
+	if !re.MatchString(*r.Email) {
+		return fmt.Errorf("Invalid 'email' value")
+	}
+
+	return nil
 }
 
 // CreateUserResponse .
@@ -288,8 +309,8 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 			return nil, fmt.Errorf("Invalid format")
 		}
 
-		if req.Name == nil || req.Email == nil {
-			return nil, fmt.Errorf("Missing fields")
+		if err = req.Validate(); err != nil {
+			return nil, err
 		}
 
 		user := &models.User{Name: *req.Name, Email: *req.Email}
