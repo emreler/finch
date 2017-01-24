@@ -56,7 +56,7 @@ func (r *CreateAlertRequest) Validate() error {
 			return fmt.Errorf("url must be present in the http(s)://domain.com format")
 		}
 
-		if match, _ := regexp.Match("^(http://|https://)(localhost|127.0.0.1|172.17)", []byte(r.URL)); match {
+		if match, _ := regexp.Match("^(http://|https://)(localhost|127.0.0.1|0.0.0.0|172.17)", []byte(r.URL)); match {
 			return fmt.Errorf("url can't be a local pointing address")
 		}
 	}
