@@ -91,6 +91,10 @@ func (r *CreateUserRequest) Validate() error {
 		return fmt.Errorf("Invalid 'email' value")
 	}
 
+	if (r.AlertAfter == 0 || r.AlertAfter < 0) && r.AlertDate == "" {
+		return fmt.Errorf("Either 'alertAfter' or 'alertDate' fields must be present")
+	}
+
 	return nil
 }
 
@@ -213,7 +217,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 
 		var alertDate time.Time
 
-		if req.AlertAfter != 0 {
+		if req.AlertAfter > 0 {
 			alertDate = time.Now().Add(time.Duration(req.AlertAfter) * time.Second)
 		} else if req.AlertDate != "" {
 			alertDate, err = time.Parse(time.RFC3339, req.AlertDate)
