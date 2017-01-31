@@ -59,6 +59,10 @@ func (r *CreateAlertRequest) Validate() error {
 		if match, _ := regexp.Match("^(http://|https://)(localhost|127.0.0.1|0.0.0.0|172.17)", []byte(r.URL)); match {
 			return fmt.Errorf("url can't be a local pointing address")
 		}
+
+		if r.AlertAfter == 0 || r.AlertAfter < 0 && r.AlertDate == "" {
+			return fmt.Errorf("Either 'alertAfter' or 'alertDate' fields must be present")
+		}
 	}
 	return nil
 }
@@ -89,10 +93,6 @@ func (r *CreateUserRequest) Validate() error {
 	re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+$`)
 	if !re.MatchString(*r.Email) {
 		return fmt.Errorf("Invalid 'email' value")
-	}
-
-	if (r.AlertAfter == 0 || r.AlertAfter < 0) && r.AlertDate == "" {
-		return fmt.Errorf("Either 'alertAfter' or 'alertDate' fields must be present")
 	}
 
 	return nil
