@@ -8,9 +8,20 @@ import (
 	"github.com/emreler/finch/config"
 )
 
+const (
+	levelInfo  = "INFO"
+	levelError = "ERROR"
+)
+
 // Logger .
 type Logger struct {
 	conn *le_go.Logger
+}
+
+// LogMessage .
+type LogMessage struct {
+	Level   string `json:"level"`
+	Message string `json:"message"`
 }
 
 // NewLogger .
@@ -28,14 +39,37 @@ func NewLogger(token config.LogentriesConfig) *Logger {
 
 // Info .
 func (l *Logger) Info(data interface{}) {
+	var j []byte
 	if str, ok := data.(string); ok {
-		l.conn.Println(str)
+		logMsg := &LogMessage{
+			Level:   levelInfo,
+			Message: str,
+		}
+
+		j, _ = json.Marshal(logMsg)
+
+		l.conn.Println(j)
 	} else {
 		jstring, _ := json.Marshal(data)
-		l.conn.Println(string(jstring))
+
+		logMsg := &LogMessage{
+			Level:   levelInfo,
+			Message: string(jstring),
+		}
+
+		j, _ = json.Marshal(logMsg)
+
+		l.conn.Println(string(j))
 	}
 }
 
 func (l *Logger) Error(err error) {
-	l.conn.Println(err.Error())
+	logMsg := &LogMessage{
+		Level:   levelError,
+		Message: err.Error(),
+	}
+
+	j, _ := json.Marshal(logMsg)
+
+	l.conn.Println(string(j))
 }
