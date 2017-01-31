@@ -58,6 +58,10 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 		resp, err = http.Post(alert.URL, alert.ContentType, strings.NewReader(alert.Data))
 	}
 
+	if err != nil {
+		return err
+	}
+
 	defer resp.Body.Close()
 
 	var body []byte
