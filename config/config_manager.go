@@ -24,7 +24,7 @@ type RedisConfig struct {
 type Config struct {
 	Mongo      MongoConfig      `json:"mongo"`
 	Redis      RedisConfig      `json:"redis"`
-	Logentries LogentriesConfig `json:"Logentries"`
+	Logentries LogentriesConfig `json:"logentries"`
 	Secret     string           `json:"secret"`
 }
 
