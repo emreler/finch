@@ -33,7 +33,7 @@ func (s *Storage) CreateUser(user *models.User) (string, error) {
 	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
 
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return user.ID.Hex(), nil

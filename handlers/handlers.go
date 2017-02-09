@@ -189,7 +189,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 	match := re.FindStringSubmatch(authorization)
 
 	if len(match) != 2 {
-		return nil, fmt.Errorf("No token found in requst")
+		return nil, fmt.Errorf("No token found in request")
 	}
 
 	tokenString := match[1]
