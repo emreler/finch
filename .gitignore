@@ -4,3 +4,4 @@
 .DS_Store
 /redis-data
 /mongo-data
+/vendor

@@ -2,12 +2,14 @@ FROM golang:1.7.1
 
 WORKDIR /go/src/github.com/emreler/finch
 
-ADD . .
+RUN go get github.com/tools/godep
 
-RUN go get
+ADD Godeps Godeps
+
+RUN godep restore
+
+ADD . .
 
 RUN go install
 
 ENTRYPOINT finch --config=/etc/finch/config.json
-
-EXPOSE 8081
