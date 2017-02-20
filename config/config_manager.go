@@ -6,8 +6,6 @@ import (
 	"log"
 )
 
-const defaultConfigPath = "config.json"
-
 // MongoConfig has config values for MongoDB
 type MongoConfig string
 
@@ -30,18 +28,28 @@ type Config struct {
 
 // NewConfig parses config file and return Config struct
 func NewConfig(configPath string) *Config {
-	if configPath == "" {
-		configPath = defaultConfigPath
-	}
+	var file []byte
+	var err error
 
-	file, err := ioutil.ReadFile(configPath)
+	if configPath != "" {
+		file, err = ioutil.ReadFile(configPath)
 
-	if err != nil {
-		log.Fatalf("Config file '%s' file not found", configPath)
+		if err != nil {
+			log.Fatalf("Config file '%s' file not found", configPath)
+		}
+	} else {
+		file, err = ioutil.ReadFile("./config.json")
+
+		if err != nil {
+			file, err = ioutil.ReadFile("/etc/finch/config.json")
+		}
+
+		if err != nil {
+			log.Fatalf("Config file is not found")
+		}
 	}
 
 	config := &Config{}
 	json.Unmarshal(file, config)
-
 	return config
 }

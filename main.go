@@ -14,15 +14,14 @@ import (
 )
 
 const prefix = "/v1"
-const defaultConfigPath = "/etc/finch/config.json"
 
 func main() {
-	configPath := flag.String("config", defaultConfigPath, "Path of config.json file")
+	configPath := flag.String("config", "", "Path of config.json file")
 	flag.Parse()
 
-	c := make(chan string)
-
 	config := config.NewConfig(*configPath)
+
+	c := make(chan string)
 
 	auth := auth.NewAuth(config.Secret)
 	stg := storage.NewStorage(config.Mongo)
