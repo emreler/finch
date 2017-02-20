@@ -2,7 +2,6 @@ package channel
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -62,14 +61,14 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 		return err
 	}
 
-	defer resp.Body.Close()
+	// defer resp.Body.Close()
+	//
+	// var body []byte
+	// if body, err = ioutil.ReadAll(resp.Body); err != nil {
+	// 	return err
+	// }
 
-	var body []byte
-	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		return err
-	}
-
-	log.Printf("Response for %s request to %s: %s", alert.Method, alert.URL, string(body))
+	log.Printf("Response for %s request to %s: %d", alert.Method, alert.URL, resp.StatusCode)
 
 	return nil
 }
