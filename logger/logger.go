@@ -71,5 +71,6 @@ func (l *Logger) Error(err error) {
 
 	j, _ := json.Marshal(logMsg)
 
+	log.Println(string(j))
 	l.conn.Println(string(j))
 }

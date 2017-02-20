@@ -14,8 +14,10 @@ type LogentriesConfig string
 
 // RedisConfig has config values for Redis
 type RedisConfig struct {
-	Addr string `json:"addr"`
-	Pwd  string `json:"pwd"`
+	Addr                 string `json:"addr"`
+	Pwd                  string `json:"pwd"`
+	PendingAlertsHashKey string `json:"pendingAlertsHashKey"`
+	AlertsChannelKey     string `json:"alertsChannelKey"`
 }
 
 // Config struct defines the config structure
@@ -42,14 +44,19 @@ func NewConfig(configPath string) *Config {
 
 		if err != nil {
 			file, err = ioutil.ReadFile("/etc/finch/config.json")
-		}
 
-		if err != nil {
-			log.Fatalf("Config file is not found")
+			if err != nil {
+				log.Fatalf("Config file is not found")
+			}
 		}
 	}
 
 	config := &Config{}
-	json.Unmarshal(file, config)
+	err = json.Unmarshal(file, config)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return config
 }

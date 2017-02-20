@@ -11,8 +11,9 @@ import (
 
 // Alerter is the struct for alerting on event times
 type Alerter struct {
-	client *redis.Client
-	c      *chan string
+	client      *redis.Client
+	c           *chan string
+	redisConfig *config.RedisConfig
 }
 
 // NewAlerter creates and returns new Alerter instance
@@ -23,7 +24,9 @@ func NewAlerter(config config.RedisConfig, c *chan string) *Alerter {
 		DB:       0,
 	})
 
-	return &Alerter{client: client, c: c}
+	client.ConfigSet("notify-keyspace-events", "Ex")
+
+	return &Alerter{client: client, c: c, redisConfig: &config}
 }
 
 // AddAlert method adds new alert to specified date
@@ -40,7 +43,15 @@ func (a *Alerter) RemoveAlert(alertID string) {
 // StartListening starts to listen from Redis for alerts
 func (a *Alerter) StartListening() {
 	go func() {
-		pubsub, err := a.client.Subscribe("__keyevent@0__:expired")
+		// before waiting for new alerts, handle the waiting ones in the list
+		// that are created with ./persist-alerts/main.go
+		alertsMap, _ := a.client.HGetAll(a.redisConfig.PendingAlertsHashKey).Result()
+
+		for alertID := range alertsMap {
+			*a.c <- string(alertID)
+		}
+
+		pubsub, err := a.client.Subscribe(a.redisConfig.AlertsChannelKey)
 
 		if err != nil {
 			panic(err)
@@ -50,7 +61,8 @@ func (a *Alerter) StartListening() {
 			msg, err := pubsub.ReceiveMessage()
 
 			if err != nil {
-				panic(err)
+				log.Println(err)
+				continue
 			}
 
 			log.Println(string(msg.Payload))
