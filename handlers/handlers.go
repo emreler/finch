@@ -47,6 +47,7 @@ type CreateAlertRequest struct {
 	AlertDate   string `json:"alertDate"`
 	AlertAfter  int    `json:"alertAfter"`
 	RepeatEvery int    `json:"repeatEvery"`
+	RepeatCount int    `json:"repeatCount"`
 }
 
 // Validate validates request
@@ -237,8 +238,16 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 		alert.Data = req.Data
 		alert.User = bson.ObjectIdHex(userID)
 
+		alert.Schedule = &models.Schedule{}
+
 		if req.RepeatEvery > 0 {
-			alert.Schedule = &models.Schedule{RepeatEvery: req.RepeatEvery}
+			alert.Schedule.RepeatEvery = req.RepeatEvery
+		}
+
+		if req.RepeatCount > 0 {
+			alert.Schedule.RepeatCount = req.RepeatCount
+		} else {
+			alert.Schedule.RepeatCount = -1
 		}
 
 		alertID, err := h.stg.CreateAlert(alert)
@@ -281,7 +290,7 @@ func (h *Handlers) ProcessAlert(alertID string) {
 		return
 	}
 
-	if alert.Enabled == true {
+	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
 		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
 		if alert.Channel == TypeHTTP {
 			httpChannel := &channel.HttpChannel{}
@@ -290,6 +299,12 @@ func (h *Handlers) ProcessAlert(alertID string) {
 			if err != nil {
 				h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
 			}
+		}
+
+		if alert.Schedule.RepeatCount > 0 {
+			alert.Schedule.RepeatCount--
+
+			h.stg.UpdateAlert(alert)
 		}
 	}
 

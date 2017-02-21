@@ -48,6 +48,7 @@ func (l *Logger) Info(data interface{}) {
 
 		j, _ = json.Marshal(logMsg)
 
+		log.Println(string(j))
 		l.conn.Println(string(j))
 	} else {
 		jstring, _ := json.Marshal(data)
@@ -59,6 +60,7 @@ func (l *Logger) Info(data interface{}) {
 
 		j, _ = json.Marshal(logMsg)
 
+		log.Println(string(j))
 		l.conn.Println(string(j))
 	}
 }

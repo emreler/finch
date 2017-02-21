@@ -9,6 +9,7 @@ import (
 // Schedule represents schedule of alert
 type Schedule struct {
 	RepeatEvery int `bson:"repeatEvery,omitempty" json:"repeatEvery,omitempty"`
+	RepeatCount int `bson:"repeatCount" json:"repeatCount"`
 }
 
 // Alert struct represents alert data stored in storage

@@ -100,6 +100,10 @@ paths:
               repeatEvery:
                 type: integer
                 description: Repeat the alert every x seconds.
+              repeatCount:
+                type: integer
+                description: Repeat the alert x times.
+                default: 3
       responses:
         200:
           description: Generated user token

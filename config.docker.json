@@ -4,7 +4,7 @@
     "addr": "redis:6379",
     "pwd": "",
     "pendingAlertsListKey": "finch:alerts:pending",
-    "alertsChannelKey": "finch:alerts:channel"
+    "alertsChannelKey": "__keyevent@0__:expired"
   },
   "host": "localhost:8081",
   "logentries": "LOGENTRIES_KEY",
