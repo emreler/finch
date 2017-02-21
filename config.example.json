@@ -2,7 +2,9 @@
   "mongo": "mongodb://mongo:27017/finch",
   "redis": {
     "addr": "redis:6379",
-    "pwd": ""
+    "pwd": "",
+    "pendingAlertsListKey": "finch:alerts:pending",
+    "alertsChannelKey": "finch:alerts:channel"
   },
   "host": "localhost:8081",
   "logentries": "LOGENTRIES_KEY",
