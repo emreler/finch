@@ -39,12 +39,11 @@ func main() {
 
 		listeners, _ := client.Publish(config.Redis.AlertsChannelKey, alertID).Result()
 
-		// if there is no subscribers to the channel, that means finch is not running
-		// so we persist them to a list, which is going to be scanned on startup by finch
-
 		log.Printf("delivered to %d listeners", listeners)
 
 		if listeners == 0 {
+			// if there is no subscribers to the channel, that means finch is not running
+			// so we persist them to a hash, which is going to be scanned on startup by finch
 			err := client.HSet(config.Redis.PendingAlertsHashKey, alertID, "1").Err()
 
 			if err != nil {
