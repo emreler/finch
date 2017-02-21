@@ -47,8 +47,6 @@ func main() {
 		if listeners == 0 {
 			err := client.HSet(config.Redis.PendingAlertsHashKey, alertID, "1").Err()
 
-			// log.Println(res)
-			log.Println(err)
 			if err != nil {
 				log.Println(err)
 			}

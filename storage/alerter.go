@@ -51,6 +51,8 @@ func (a *Alerter) StartListening() {
 			*a.c <- string(alertID)
 		}
 
+		a.client.Del(a.redisConfig.PendingAlertsHashKey)
+
 		pubsub, err := a.client.Subscribe(a.redisConfig.AlertsChannelKey)
 
 		if err != nil {

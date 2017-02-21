@@ -55,7 +55,7 @@ func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
 
 // GetAlert Finds and returns alert data from storage
 func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
-	if match, _ := regexp.Match("^[a-f\\d]{24}$/i", []byte(alertID)); !match {
+	if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(alertID)); !match {
 		return nil, fmt.Errorf("Message '%s' is not a valid MongoDB ObjectID", alertID)
 	}
 
