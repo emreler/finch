@@ -28,11 +28,19 @@ func NewStorage(url config.MongoConfig) *Storage {
 	return &Storage{Session: ses}
 }
 
+// GetDBSession returns a new connection from the pool
+func (s *Storage) GetDBSession() *mgo.Session {
+	return s.Session.Copy()
+}
+
 // CreateUser creates new user
 func (s *Storage) CreateUser(user *models.User) (string, error) {
+	ses := s.GetDBSession()
+	defer ses.Close()
+
 	user.ID = bson.NewObjectId()
 
-	err := s.Session.DB("tmpmail-dev").C("users").Insert(user)
+	err := ses.DB("tmpmail-dev").C("users").Insert(user)
 
 	if err != nil {
 		return "", err
@@ -43,8 +51,11 @@ func (s *Storage) CreateUser(user *models.User) (string, error) {
 
 // CreateAlert adds new alert to storage
 func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
+	ses := s.GetDBSession()
+	defer ses.Close()
+
 	a.ID = bson.NewObjectId()
-	err := s.Session.DB("tmpmail-dev").C("alerts").Insert(a)
+	err := ses.DB("tmpmail-dev").C("alerts").Insert(a)
 
 	if err != nil {
 		return "", err
@@ -56,13 +67,16 @@ func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
 // GetAlert Finds and returns alert data from storage
 func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(alertID)); !match {
-		return nil, fmt.Errorf("Message '%s' is not a valid MongoDB ObjectID", alertID)
+		return nil, fmt.Errorf("Alert ID '%s' is not a valid MongoDB ObjectID", alertID)
 	}
 
 	ID := bson.ObjectIdHex(alertID)
 
+	ses := s.GetDBSession()
+	defer ses.Close()
+
 	alert := &models.Alert{}
-	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
+	err := ses.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
 		return nil, err
@@ -73,7 +87,10 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 
 // UpdateAlert .
 func (s *Storage) UpdateAlert(alert *models.Alert) error {
-	err := s.Session.DB("tmpmail-dev").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
+	ses := s.GetDBSession()
+	defer ses.Close()
+
+	err := ses.DB("tmpmail-dev").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
 
 	if err != nil {
 		return err
@@ -84,11 +101,18 @@ func (s *Storage) UpdateAlert(alert *models.Alert) error {
 
 // GetUserAlerts .
 func (s *Storage) GetUserAlerts(userID string) ([]*models.Alert, error) {
+	if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(userID)); !match {
+		return nil, fmt.Errorf("User ID '%s' is not a valid MongoDB ObjectID", userID)
+	}
+
+	ses := s.GetDBSession()
+	defer ses.Close()
+
 	ID := bson.ObjectIdHex(userID)
 
 	var alerts []*models.Alert
 
-	err := s.Session.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&alerts)
+	err := ses.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&alerts)
 
 	if err != nil {
 		return nil, err
