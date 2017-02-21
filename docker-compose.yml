@@ -5,7 +5,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./config.json:/etc/finch/config.json
+      - ./config.docker.json:/etc/finch/config.json
   redis:
     image: "redis:3.2.6"
     volumes:
