@@ -40,7 +40,7 @@ func (s *Storage) CreateUser(user *models.User) (string, error) {
 
 	user.ID = bson.NewObjectId()
 
-	err := ses.DB("tmpmail-dev").C("users").Insert(user)
+	err := ses.DB("finch").C("users").Insert(user)
 
 	if err != nil {
 		return "", err
@@ -55,7 +55,7 @@ func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
 	defer ses.Close()
 
 	a.ID = bson.NewObjectId()
-	err := ses.DB("tmpmail-dev").C("alerts").Insert(a)
+	err := ses.DB("finch").C("alerts").Insert(a)
 
 	if err != nil {
 		return "", err
@@ -76,7 +76,7 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	defer ses.Close()
 
 	alert := &models.Alert{}
-	err := ses.DB("tmpmail-dev").C("alerts").Find(bson.M{"_id": ID}).One(alert)
+	err := ses.DB("finch").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (s *Storage) UpdateAlert(alert *models.Alert) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
-	err := ses.DB("tmpmail-dev").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
+	err := ses.DB("finch").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
 
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (s *Storage) GetUserAlerts(userID string) ([]*models.Alert, error) {
 
 	var alerts []*models.Alert
 
-	err := ses.DB("tmpmail-dev").C("alerts").Find(bson.M{"user": ID}).All(&alerts)
+	err := ses.DB("finch").C("alerts").Find(bson.M{"user": ID}).All(&alerts)
 
 	if err != nil {
 		return nil, err
