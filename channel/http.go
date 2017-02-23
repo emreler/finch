@@ -17,10 +17,11 @@ const (
 	contentForm  = "application/x-www-form-urlencoded"
 )
 
-type HttpChannel struct {
+// HTTPChannel implements the http request alert method
+type HTTPChannel struct {
 }
 
-func (h *HttpChannel) Notify(alert *models.Alert) error {
+func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {
 	ValidMethods := map[string]bool{
 		methodGet:  true,
 		methodPost: true,
@@ -37,7 +38,7 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 	}
 
 	if !ValidMethods[alert.Method] {
-		return fmt.Errorf("Invalid method %s", alert.Method)
+		return 0, fmt.Errorf("Invalid method %s", alert.Method)
 	}
 
 	if alert.ContentType == "" {
@@ -45,7 +46,7 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 	}
 
 	if !ValidContentTypes[alert.ContentType] {
-		return fmt.Errorf("Invalid contentType %s", alert.ContentType)
+		return 0, fmt.Errorf("Invalid contentType %s", alert.ContentType)
 	}
 
 	var resp *http.Response
@@ -58,7 +59,7 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 	}
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// defer resp.Body.Close()
@@ -70,5 +71,5 @@ func (h *HttpChannel) Notify(alert *models.Alert) error {
 
 	log.Printf("Response for %s request to %s: %d", alert.Method, alert.URL, resp.StatusCode)
 
-	return nil
+	return resp.StatusCode, nil
 }

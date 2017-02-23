@@ -293,8 +293,8 @@ func (h *Handlers) ProcessAlert(alertID string) {
 	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
 		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
 		if alert.Channel == TypeHTTP {
-			httpChannel := &channel.HttpChannel{}
-			err := httpChannel.Notify(alert)
+			httpChannel := &channel.HTTPChannel{}
+			_, err := httpChannel.Notify(alert)
 
 			if err != nil {
 				h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
