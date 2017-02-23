@@ -34,7 +34,7 @@ func (s *Storage) GetDBSession() *mgo.Session {
 }
 
 // CreateUser creates new user
-func (s *Storage) CreateUser(user *models.User) (string, error) {
+func (s *Storage) CreateUser(user *models.User) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -43,10 +43,10 @@ func (s *Storage) CreateUser(user *models.User) (string, error) {
 	err := ses.DB("finch").C("users").Insert(user)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return user.ID.Hex(), nil
+	return nil
 }
 
 // CreateAlert adds new alert to storage
