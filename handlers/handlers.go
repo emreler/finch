@@ -250,18 +250,20 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 			alert.Schedule.RepeatCount = -1
 		}
 
-		alertID, err := h.stg.CreateAlert(alert)
+		err := h.stg.CreateAlert(alert)
 
 		if err != nil {
 			h.logger.Error(err)
 			return nil, err
 		}
 
+		h.stg.LogCreateAlert(alert)
+
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 
 		h.logger.Info(fmt.Sprintf("%d seconds later", seconds))
 
-		h.alt.AddAlert(alertID, alertDate)
+		h.alt.AddAlert(alert.ID.Hex(), alertDate)
 
 		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
 		return res, nil

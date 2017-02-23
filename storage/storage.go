@@ -50,7 +50,7 @@ func (s *Storage) CreateUser(user *models.User) error {
 }
 
 // CreateAlert adds new alert to storage
-func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
+func (s *Storage) CreateAlert(a *models.Alert) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -58,10 +58,10 @@ func (s *Storage) CreateAlert(a *models.Alert) (string, error) {
 	err := ses.DB("finch").C("alerts").Insert(a)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return a.ID.Hex(), nil
+	return nil
 }
 
 // GetAlert Finds and returns alert data from storage
