@@ -45,7 +45,9 @@ func main() {
 	go func() {
 		for {
 			alertID := <-c
-			hnd.ProcessAlert(alertID)
+			go func() {
+				hnd.ProcessAlert(alertID)
+			}()
 		}
 	}()
 
