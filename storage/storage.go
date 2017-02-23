@@ -14,7 +14,7 @@ import (
 
 // Storage struct is used for storeing persistant data of alerts
 type Storage struct {
-	Session *mgo.Session
+	session *mgo.Session
 }
 
 // NewStorage creates and returns new Storage instance
@@ -25,12 +25,12 @@ func NewStorage(url config.MongoConfig) *Storage {
 		log.Fatal(err)
 	}
 
-	return &Storage{Session: ses}
+	return &Storage{session: ses}
 }
 
 // GetDBSession returns a new connection from the pool
 func (s *Storage) GetDBSession() *mgo.Session {
-	return s.Session.Copy()
+	return s.session.Copy()
 }
 
 // CreateUser creates new user

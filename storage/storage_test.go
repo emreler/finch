@@ -22,6 +22,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestProcessAlert(t *testing.T) {
+	err := s.ProcessAlert(&models.Alert{ID: bson.NewObjectId()}, 200)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	user := &models.User{Name: "foo", Email: "bar@usefinch.co"}
 
