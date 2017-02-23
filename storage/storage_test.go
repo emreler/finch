@@ -22,6 +22,25 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestLogEvents(t *testing.T) {
+	err := s.LogProcessAlert(&models.Alert{ID: bson.NewObjectId()}, 200)
+
+	if err != nil {
+		t.Error(err)
+	}
+	err = s.LogCreateAlert(&models.Alert{ID: bson.NewObjectId()})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = s.LogCreateUser(&models.User{ID: bson.NewObjectId()})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	user := &models.User{Name: "foo", Email: "bar@usefinch.co"}
 

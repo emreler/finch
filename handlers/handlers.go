@@ -250,18 +250,20 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 			alert.Schedule.RepeatCount = -1
 		}
 
-		alertID, err := h.stg.CreateAlert(alert)
+		err := h.stg.CreateAlert(alert)
 
 		if err != nil {
 			h.logger.Error(err)
 			return nil, err
 		}
 
+		h.stg.LogCreateAlert(alert)
+
 		seconds := int(alertDate.Sub(time.Now()).Seconds())
 
 		h.logger.Info(fmt.Sprintf("%d seconds later", seconds))
 
-		h.alt.AddAlert(alertID, alertDate)
+		h.alt.AddAlert(alert.ID.Hex(), alertDate)
 
 		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
 		return res, nil
@@ -293,12 +295,14 @@ func (h *Handlers) ProcessAlert(alertID string) {
 	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
 		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
 		if alert.Channel == TypeHTTP {
-			httpChannel := &channel.HttpChannel{}
-			err := httpChannel.Notify(alert)
+			httpChannel := &channel.HTTPChannel{}
+			statusCode, err := httpChannel.Notify(alert)
 
 			if err != nil {
 				h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
 			}
+
+			h.stg.LogProcessAlert(alert, statusCode)
 		}
 
 		if alert.Schedule.RepeatCount > 0 {
@@ -334,15 +338,17 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 
 		user := &models.User{Name: *req.Name, Email: *req.Email}
 
-		userID, err := h.stg.CreateUser(user)
+		err = h.stg.CreateUser(user)
 
 		if err != nil {
 			h.logger.Error(err)
 			return nil, err
 		}
 
+		h.stg.LogCreateUser(user)
+
 		exp := time.Now().Add(24 * 365 * time.Hour)
-		tokenString, err := h.auth.GenerateToken(userID, exp)
+		tokenString, err := h.auth.GenerateToken(user.ID.Hex(), exp)
 
 		if err != nil {
 			h.logger.Error(err)
