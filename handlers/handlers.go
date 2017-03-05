@@ -24,15 +24,16 @@ const (
 
 // Handlers .
 type Handlers struct {
-	stg    *storage.Storage
-	alt    *storage.Alerter
-	logger *logger.Logger
-	auth   *auth.Auth
+	stg            *storage.Storage
+	alt            *storage.Alerter
+	logger         *logger.Logger
+	auth           *auth.Auth
+	counterChannel chan bool
 }
 
 // NewHandlers initializes handlers
-func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logger, auth *auth.Auth) *Handlers {
-	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth}
+func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool) *Handlers {
+	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel}
 }
 
 // CreateAlertRequest .
@@ -303,6 +304,8 @@ func (h *Handlers) ProcessAlert(alertID string) {
 			}
 
 			h.stg.LogProcessAlert(alert, statusCode)
+
+			h.counterChannel <- true
 		}
 
 		if alert.Schedule.RepeatCount > 0 {

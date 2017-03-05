@@ -13,6 +13,11 @@
 			"Rev": "a601269ab70c205d26370c16f7c81e9017c14e04"
 		},
 		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Comment": "v1.1.0-27-gb258b4f",
+			"Rev": "b258b4fadb573ac412f187b9f31974ea99d32f50"
+		},
+		{
 			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
 			"Rev": "db14e161995a5177acef654cb0dd785e8ee8bc22"
 		},
