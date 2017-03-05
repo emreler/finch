@@ -13,6 +13,25 @@ const typeCreateAlert = "create_alert"
 const typeCreateUser = "create_user"
 const typeProcessAlert = "process_alert"
 
+func (s *Storage) CountProcessAlertLogs() (int, error) {
+	ses := s.GetDBSession()
+	defer ses.Close()
+
+	data := struct {
+		Type string
+	}{
+		typeProcessAlert,
+	}
+
+	count, err := ses.DB("finch").C(eventsCollection).Find(data).Count()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // LogProcessAlert creates process_alert event
 func (s *Storage) LogProcessAlert(alert *models.Alert, statusCode int) error {
 	ses := s.GetDBSession()

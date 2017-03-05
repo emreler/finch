@@ -44,14 +44,14 @@ func TestLogEvents(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	user := &models.User{Name: "foo", Email: "bar@usefinch.co"}
 
-	ID, err := s.CreateUser(user)
+	err := s.CreateUser(user)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	userID = ID
+	userID = user.ID.Hex()
 
 	t.Logf("Created userID: %s", userID)
 }
@@ -64,14 +64,14 @@ func TestCreateAlert(t *testing.T) {
 	alert.AlertDate = time.Now().Add(10 * time.Second)
 	alert.Data = "somedata"
 
-	ID, err := s.CreateAlert(alert)
+	err := s.CreateAlert(alert)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	alertID = ID
+	alertID = alert.ID.Hex()
 
 	t.Logf("Created alertID: %s", alertID)
 }
