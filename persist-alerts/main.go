@@ -27,28 +27,22 @@ func main() {
 	}
 
 	for {
-		msg, err := pubsub.ReceiveMessage()
+		alert, err := pubsub.ReceiveMessage()
 
 		if err != nil {
-			panic(err)
+			log.Print(err)
+			continue
 		}
 
-		alertID := msg.Payload
+		alertID := alert.Payload
 
-		log.Printf("received %s", alertID)
+		log.Println(alertID)
 
-		listeners, _ := client.Publish(config.Redis.AlertsChannelKey, alertID).Result()
-
-		log.Printf("delivered to %d listeners", listeners)
-
-		if listeners == 0 {
-			// if there is no subscribers to the channel, that means finch is not running
-			// so we persist them to a hash, which is going to be scanned on startup by finch
-			err := client.HSet(config.Redis.PendingAlertsHashKey, alertID, "1").Err()
-
+		go func() {
+			err := client.RPush(config.Redis.AlertsChannelKey, alertID).Err()
 			if err != nil {
-				log.Println(err)
+				log.Print(err)
 			}
-		}
+		}()
 	}
 }

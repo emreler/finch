@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"log"
 	"time"
 
 	redis "gopkg.in/redis.v4"
@@ -43,32 +42,11 @@ func (a *Alerter) RemoveAlert(alertID string) {
 // StartListening starts to listen from Redis for alerts
 func (a *Alerter) StartListening() {
 	go func() {
-		// before waiting for new alerts, handle the waiting ones in the list
-		// that are created with ./persist-alerts/main.go
-		alertsMap, _ := a.client.HGetAll(a.redisConfig.PendingAlertsHashKey).Result()
-
-		for alertID := range alertsMap {
-			*a.c <- string(alertID)
-		}
-
-		a.client.Del(a.redisConfig.PendingAlertsHashKey)
-
-		pubsub, err := a.client.Subscribe(a.redisConfig.AlertsChannelKey)
-
-		if err != nil {
-			panic(err)
-		}
-
 		for {
-			msg, err := pubsub.ReceiveMessage()
+			msg := a.client.BLPop(0, a.redisConfig.AlertsChannelKey)
+			alertID := msg.Val()[1]
 
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			log.Println(string(msg.Payload))
-			*a.c <- string(msg.Payload)
+			*a.c <- string(alertID)
 		}
 	}()
 }
