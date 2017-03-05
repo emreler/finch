@@ -6,6 +6,7 @@ services:
       - "8081:8081"
     volumes:
       - ./config.docker.json:/etc/finch/config.json
+      - ./web:/go/src/github.com/emreler/finch/web
   redis:
     image: "redis:3.2.6"
     volumes:
