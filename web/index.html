@@ -112,7 +112,8 @@
         (new CountUp(elem, 0, {{ .Counter }}, 0, 2.5, options)).start();
 
         if (window["WebSocket"]) {
-            conn = new WebSocket("ws://" + document.location.host + "/ws");
+            var wsp = (document.location.protocol === "https:" ? "wss:" : "ws:")
+            conn = new WebSocket(wsp + "//" + document.location.host + "/ws");
             conn.onclose = function(e) {
 
             };
