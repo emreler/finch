@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/emreler/finch/models"
 )
@@ -52,16 +53,22 @@ func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {
 	var resp *http.Response
 	var err error
 
+	httpClient := http.Client{
+		Transport: &http.Transport{DisableKeepAlives: true},
+		Timeout:   time.Second * 10,
+	}
+
 	if alert.Method == methodGet {
-		resp, err = http.Get(alert.URL)
+		resp, err = httpClient.Get(alert.URL)
 	} else if alert.Method == methodPost {
-		resp, err = http.Post(alert.URL, alert.ContentType, strings.NewReader(alert.Data))
+		resp, err = httpClient.Post(alert.URL, alert.ContentType, strings.NewReader(alert.Data))
 	}
 
 	if err != nil {
 		return 0, err
 	}
 
+	resp.Body.Close()
 	// defer resp.Body.Close()
 	//
 	// var body []byte
