@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/emreler/finch/auth"
 	"github.com/emreler/finch/config"
@@ -97,11 +98,15 @@ func main() {
 	})
 
 	go func() {
+		ticker := time.NewTicker(time.Millisecond * 500)
 		for {
-			<-counterChannel
-			processedAlertCount++
-			// increment the counter on clients
-			hub.Broadcast <- []byte(strconv.Itoa(processedAlertCount))
+			select {
+			case <-counterChannel:
+				processedAlertCount++
+			case <-ticker.C:
+				// increment the counter on clients
+				hub.Broadcast <- []byte(strconv.Itoa(processedAlertCount))
+			}
 		}
 	}()
 

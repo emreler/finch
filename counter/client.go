@@ -40,23 +40,25 @@ func (c *Client) WaitMessages() {
 	for {
 		select {
 		case message, ok := <-c.Send:
-			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if !ok {
-				// The hub closed the channel.
-				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
+			go func(message []byte) {
+				c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+				if !ok {
+					// The hub closed the channel.
+					c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+					return
+				}
 
-			w, err := c.Conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			w.Write(message)
+				w, err := c.Conn.NextWriter(websocket.TextMessage)
+				if err != nil {
+					return
+				}
+				w.Write(message)
 
-			if err := w.Close(); err != nil {
-				// runs the deferred function above
-				return
-			}
+				if err := w.Close(); err != nil {
+					// runs the deferred function above
+					return
+				}
+			}(message)
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
