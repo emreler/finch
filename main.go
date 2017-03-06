@@ -113,9 +113,9 @@ func main() {
 	go func() {
 		for {
 			alertID := <-alertChannel
-			go func() {
+			go func(alertID string) {
 				hnd.ProcessAlert(alertID)
-			}()
+			}(alertID)
 		}
 	}()
 
