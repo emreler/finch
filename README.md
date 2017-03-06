@@ -1,5 +1,7 @@
 # Finch
 
+[![Build Status](https://travis-ci.org/emreler/finch.svg?branch=master)](https://travis-ci.org/emreler/finch)
+
 This is the source code repository for the Finch (https://usefinch.co) project.
 
 ## What is it
