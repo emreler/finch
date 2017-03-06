@@ -99,13 +99,17 @@ func main() {
 
 	go func() {
 		ticker := time.NewTicker(time.Millisecond * 500)
+		lastSent := processedAlertCount
 		for {
 			select {
 			case <-counterChannel:
 				processedAlertCount++
 			case <-ticker.C:
-				// increment the counter on clients
-				hub.Broadcast <- []byte(strconv.Itoa(processedAlertCount))
+				if processedAlertCount > lastSent {
+					// increment the counter on clients if necessary
+					hub.Broadcast <- []byte(strconv.Itoa(processedAlertCount))
+					lastSent = processedAlertCount
+				}
 			}
 		}
 	}()
