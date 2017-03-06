@@ -7,6 +7,7 @@ import (
 )
 
 const secret = "nI1SynC+UUJOi661rkRn614BGCDV2VzzlJKMtFgbpGw="
+const userID = "12345"
 
 var tokenString string
 var auth *Auth
@@ -18,7 +19,7 @@ func TestMain(m *testing.M) {
 
 func TestGenerateToken(t *testing.T) {
 	exp := time.Now().Add(1 * time.Hour)
-	token, err := auth.GenerateToken("123", exp)
+	token, err := auth.GenerateToken(userID, exp)
 
 	if err != nil {
 		t.Error(err)
@@ -32,10 +33,14 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	err := auth.ValidateToken(tokenString)
+	claimedUserID, err := auth.ValidateToken(tokenString)
 
 	if err != nil {
 		t.Error(err)
 		return
+	}
+
+	if claimedUserID != "12" {
+		t.Errorf("UserID %s in token is not matching with %s", claimedUserID, userID)
 	}
 }
