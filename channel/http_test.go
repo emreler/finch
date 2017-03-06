@@ -7,7 +7,7 @@ import (
 )
 
 func TestNotify(t *testing.T) {
-	h := &HttpChannel{}
+	h := &HTTPChannel{}
 
 	statusCode, err := h.Notify(&models.Alert{URL: "https://google.com/", Method: methodGet})
 

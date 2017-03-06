@@ -40,7 +40,7 @@ func TestValidateToken(t *testing.T) {
 		return
 	}
 
-	if claimedUserID != "12" {
+	if claimedUserID != userID {
 		t.Errorf("UserID %s in token is not matching with %s", claimedUserID, userID)
 	}
 }
