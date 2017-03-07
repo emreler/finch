@@ -104,29 +104,37 @@
     <script>
         var current = {{ .Counter }};
         var options = {
-            useEasing: true,
-            useGrouping: true,
-            separator: ','
+          useEasing: true,
+          useGrouping: true,
+          separator: ','
         };
+        var duration = 2.5;
         var elem = document.querySelector('#counter');
-        (new CountUp(elem, 0, {{ .Counter }}, 0, 2.5, options)).start();
 
-        if (window["WebSocket"]) {
-            var wsp = (document.location.protocol === "https:" ? "wss:" : "ws:")
-            conn = new WebSocket(wsp + "//" + document.location.host + "/ws");
-            conn.onclose = function(e) {
+        var counter = new CountUp(elem, 0, {{ .Counter }}, 0, 2.5, options);
+        counter.start();
 
-            };
-            conn.onmessage = function(e) {
-                try {
-                  var newCounter = parseInt(e.data);
-                  (new CountUp(elem, current, parseInt(newCounter), 0, 2.5, options)).start();
-                  current = newCounter;
-                } catch (e) {
-                  console.error(e);
-                }
-            };
-        }
+        setTimeout(function () {
+          if (window["WebSocket"]) {
+              var wsp = (document.location.protocol === "https:" ? "wss:" : "ws:");
+
+              conn = new WebSocket(wsp + "//" + document.location.host + "/ws");
+
+              conn.onclose = function(e) {
+
+              };
+
+              conn.onmessage = function(e) {
+                  try {
+                    var newCounter = parseInt(e.data);
+                    (new CountUp(elem, current, parseInt(newCounter), 0, 2.5, options)).start();
+                    current = newCounter;
+                  } catch (e) {
+                    console.error(e);
+                  }
+              };
+          }
+        }, duration * 1000);
     </script>
 </body>
 
