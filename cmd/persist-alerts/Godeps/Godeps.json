@@ -1,0 +1,50 @@
+{
+	"ImportPath": "github.com/emreler/finch/persist-alerts",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/emreler/finch/config",
+			"Rev": "35318c2ace0af30efc41232457d9a7278e54e891"
+		},
+		{
+			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
+			"Rev": "db14e161995a5177acef654cb0dd785e8ee8bc22"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal/consistenthash",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal/errors",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal/hashtag",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal/pool",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v4/internal/proto",
+			"Comment": "v4.2.4",
+			"Rev": "c938162545c57136fa59879746bc65d0f1db3d1e"
+		}
+	]
+}

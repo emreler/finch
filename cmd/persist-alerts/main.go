@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/emreler/finch/config"
@@ -9,7 +10,10 @@ import (
 )
 
 func main() {
-	config := config.NewConfig("../config.json")
+	configPath := flag.String("config", "", "Path of config.json file")
+	flag.Parse()
+
+	config := config.NewConfig(*configPath)
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Redis.Addr,
@@ -25,6 +29,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println("Starting finch-persist-alerts")
 
 	for {
 		alert, err := pubsub.ReceiveMessage()

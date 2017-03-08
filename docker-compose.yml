@@ -7,6 +7,17 @@ services:
     volumes:
       - ./config.docker.json:/etc/finch/config.json
       - ./web:/go/src/github.com/emreler/finch/web
+    depends_on:
+      - mongo
+      - redis
+      - persist-alerts
+  persist-alerts:
+    build: ./cmd/persist-alerts
+    volumes:
+      - ./config.docker.json:/etc/finch/config.json
+    depends_on:
+      - mongo
+      - redis
   redis:
     image: "redis:3.2.6"
     volumes:
