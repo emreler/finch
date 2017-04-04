@@ -12,6 +12,7 @@ import (
 	"github.com/emreler/finch/auth"
 	"github.com/emreler/finch/config"
 	"github.com/emreler/finch/counter"
+	"github.com/emreler/finch/errors"
 	"github.com/emreler/finch/handlers"
 	"github.com/emreler/finch/logger"
 	"github.com/emreler/finch/storage"
@@ -117,8 +118,22 @@ func main() {
 	go func() {
 		for {
 			alertID := <-alertChannel
+
 			go func(alertID string) {
-				hnd.ProcessAlert(alertID)
+				err := hnd.ProcessAlert(alertID)
+
+				if err == nil {
+					alerter.RemoveProcessedAlert(alertID)
+				} else if _, ok := err.(*errors.RetryProcessError); ok {
+					logger.Info("retrying")
+					logger.Error(err)
+					alerter.AddAlertToQueue(alertID)
+					alerter.RemoveProcessedAlert(alertID)
+				} else {
+					// unknown error
+					logger.Error(err)
+					alerter.RemoveProcessedAlert(alertID)
+				}
 			}(alertID)
 		}
 	}()

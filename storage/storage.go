@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/emreler/finch/config"
+	"github.com/emreler/finch/errors"
 	"github.com/emreler/finch/models"
 )
 
@@ -66,19 +68,22 @@ func (s *Storage) CreateAlert(a *models.Alert) error {
 
 // GetAlert Finds and returns alert data from storage
 func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
-	if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(alertID)); !match {
-		return nil, fmt.Errorf("Alert ID '%s' is not a valid MongoDB ObjectID", alertID)
-	}
-
 	ID := bson.ObjectIdHex(alertID)
 
 	ses := s.GetDBSession()
+	ses.SetSocketTimeout(time.Second * 10)
+	ses.SetSyncTimeout(time.Second * 10)
 	defer ses.Close()
 
 	alert := &models.Alert{}
 	err := ses.DB("finch").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
+		if err.Error() == "no reachable servers" {
+			// if it's a connection issue we want the alert to be processed again
+			return nil, &errors.RetryProcessError{Msg: err.Error()}
+		}
+
 		return nil, err
 	}
 
@@ -88,6 +93,8 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 // UpdateAlert .
 func (s *Storage) UpdateAlert(alert *models.Alert) error {
 	ses := s.GetDBSession()
+	ses.SetSocketTimeout(time.Second * 10)
+	ses.SetSyncTimeout(time.Second * 10)
 	defer ses.Close()
 
 	err := ses.DB("finch").C("alerts").Update(bson.M{"_id": alert.ID}, alert)
