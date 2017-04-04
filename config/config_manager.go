@@ -14,10 +14,10 @@ type LogentriesConfig string
 
 // RedisConfig has config values for Redis
 type RedisConfig struct {
-	Addr                 string `json:"addr"`
-	Pwd                  string `json:"pwd"`
-	PendingAlertsHashKey string `json:"pendingAlertsHashKey"`
-	AlertsChannelKey     string `json:"alertsChannelKey"`
+	Addr                string `json:"addr"`
+	Pwd                 string `json:"pwd"`
+	PendingAlertsKey    string `json:"pendingAlertsKey"`
+	ProcessingAlertsKey string `json:"processingAlertsKey"`
 }
 
 // Config struct defines the config structure
