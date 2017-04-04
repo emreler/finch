@@ -3,8 +3,8 @@
   "redis": {
     "addr": "redis:6379",
     "pwd": "",
-    "pendingAlertsListKey": "finch:alerts:pending",
-    "alertsChannelKey": "finch:alerts:queue"
+    "pendingAlertsKey": "finch:alerts:pending",
+    "processingAlertsKey": "finch:alerts:processing"
   },
   "host": "localhost:8081",
   "logentries": "LOGENTRIES_KEY",

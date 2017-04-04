@@ -285,12 +285,12 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 }
 
 // ProcessAlert processes the alert
-func (h *Handlers) ProcessAlert(alertID string) {
+func (h *Handlers) ProcessAlert(alertID string) error {
 	alert, err := h.stg.GetAlert(alertID)
 
 	if err != nil {
 		h.logger.Error(err)
-		return
+		return err
 	}
 
 	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
@@ -320,6 +320,8 @@ func (h *Handlers) ProcessAlert(alertID string) {
 		h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate))
 		h.alt.AddAlert(alertID, nextAlertDate)
 	}
+
+	return nil
 }
 
 // CreateUser .

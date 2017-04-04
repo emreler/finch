@@ -45,7 +45,7 @@ func main() {
 		log.Println(alertID)
 
 		go func() {
-			err := client.RPush(config.Redis.AlertsChannelKey, alertID).Err()
+			err := client.LPush(config.Redis.PendingAlertsKey, alertID).Err()
 			if err != nil {
 				log.Print(err)
 			}

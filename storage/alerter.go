@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"log"
+	"regexp"
 	"time"
 
 	redis "gopkg.in/redis.v4"
@@ -11,7 +13,7 @@ import (
 // Alerter is the struct for alerting on event times
 type Alerter struct {
 	client      *redis.Client
-	c           *chan string
+	alertIDChan *chan string
 	redisConfig *config.RedisConfig
 }
 
@@ -25,7 +27,7 @@ func NewAlerter(config config.RedisConfig, c *chan string) *Alerter {
 
 	client.ConfigSet("notify-keyspace-events", "Ex")
 
-	return &Alerter{client: client, c: c, redisConfig: &config}
+	return &Alerter{client: client, alertIDChan: c, redisConfig: &config}
 }
 
 // AddAlert method adds new alert to specified date
@@ -43,10 +45,26 @@ func (a *Alerter) RemoveAlert(alertID string) {
 func (a *Alerter) StartListening() {
 	go func() {
 		for {
-			msg := a.client.BLPop(0, a.redisConfig.AlertsChannelKey)
-			alertID := msg.Val()[1]
+			// move from pending alerts queue to processing alerts queue
+			msg := a.client.BRPopLPush(a.redisConfig.PendingAlertsKey, a.redisConfig.ProcessingAlertsKey, 0)
+			alertID := string(msg.Val())
 
-			*a.c <- string(alertID)
+			// only send to channel if it looks like a mongo id and discard otherwise
+			if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(alertID)); match {
+				*a.alertIDChan <- alertID
+			} else {
+				log.Printf("%s is not a valid mongo id", alertID)
+			}
 		}
 	}()
+}
+
+// RemoveProcessedAlert removes alerts from "currently processing alerts" queue
+func (a *Alerter) RemoveProcessedAlert(alertID string) {
+	a.client.LRem(a.redisConfig.ProcessingAlertsKey, 0, alertID)
+}
+
+// AddAlertToQueue adds alerts to "process alerts" queue
+func (a *Alerter) AddAlertToQueue(alertID string) {
+	a.client.LPush(a.redisConfig.PendingAlertsKey, alertID)
 }
