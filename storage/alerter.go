@@ -31,9 +31,9 @@ func NewAlerter(config config.RedisConfig, c *chan string) *Alerter {
 }
 
 // AddAlert method adds new alert to specified date
-func (a *Alerter) AddAlert(alertID string, alertDate time.Time) {
+func (a *Alerter) AddAlert(alertID string, alertDelay time.Duration) {
 	a.client.Set(alertID, "1", 0)
-	a.client.ExpireAt(alertID, alertDate)
+	a.client.Expire(alertID, alertDelay)
 }
 
 // RemoveAlert removes alert

@@ -260,11 +260,15 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 
 		h.stg.LogCreateAlert(alert)
 
-		seconds := int(alertDate.Sub(time.Now()).Seconds())
+		seconds := int64(alertDate.Sub(time.Now()).Seconds())
+
+		if seconds == 0 {
+			seconds = 1
+		}
 
 		h.logger.Info(fmt.Sprintf("%d seconds later", seconds))
 
-		h.alt.AddAlert(alert.ID.Hex(), alertDate)
+		h.alt.AddAlert(alert.ID.Hex(), time.Duration(seconds)*time.Second)
 
 		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
 		return res, nil
@@ -316,9 +320,8 @@ func (h *Handlers) ProcessAlert(alertID string) error {
 	}
 
 	if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
-		nextAlertDate := time.Now().Add(time.Duration(alert.Schedule.RepeatEvery) * time.Second)
-		h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later at %s", alert.Schedule.RepeatEvery, nextAlertDate))
-		h.alt.AddAlert(alertID, nextAlertDate)
+		h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later", alert.Schedule.RepeatEvery))
+		h.alt.AddAlert(alertID, time.Duration(alert.Schedule.RepeatEvery)*time.Second)
 	}
 
 	return nil

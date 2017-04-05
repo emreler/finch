@@ -79,12 +79,7 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 	err := ses.DB("finch").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
-		if err.Error() == "no reachable servers" {
-			// if it's a connection issue we want the alert to be processed again
-			return nil, &errors.RetryProcessError{Msg: err.Error()}
-		}
-
-		return nil, err
+		return nil, &errors.RetryProcessError{Msg: err.Error()}
 	}
 
 	return alert, nil
