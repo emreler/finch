@@ -1,11 +1,11 @@
 {
-	"ImportPath": "github.com/emreler/finch/persist-alerts",
+	"ImportPath": "github.com/emreler/finch/cmd/persist-alerts",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/emreler/finch/config",
-			"Rev": "35318c2ace0af30efc41232457d9a7278e54e891"
+			"Rev": "8ea74b229395dc0a248d8e3be46c2049a3072636"
 		},
 		{
 			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
