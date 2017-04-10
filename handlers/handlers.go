@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -36,86 +35,7 @@ func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logg
 	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel}
 }
 
-// CreateAlertRequest .
-type CreateAlertRequest struct {
-	Token       string `json:"token"`
-	Name        string `json:"name"`
-	Channel     string `json:"channel"`
-	URL         string `json:"url"`
-	Method      string `json:"method"`
-	ContentType string `json:"contentType"`
-	Data        string `json:"data"`
-	AlertDate   string `json:"alertDate"`
-	AlertAfter  int    `json:"alertAfter"`
-	RepeatEvery int    `json:"repeatEvery"`
-	RepeatCount int    `json:"repeatCount"`
-}
-
-// Validate validates request
-func (r *CreateAlertRequest) Validate() error {
-	if r.Channel == TypeHTTP {
-		if match, _ := regexp.Match("^(http://|https://)", []byte(r.URL)); !match {
-			return fmt.Errorf("url must be present in the http(s)://domain.com format")
-		}
-
-		if match, _ := regexp.Match("^(http://|https://)(localhost|127.0.0.1|0.0.0.0|172.17)", []byte(r.URL)); match {
-			return fmt.Errorf("url can't be a local pointing address")
-		}
-
-		if r.AlertAfter == 0 || r.AlertAfter < 0 && r.AlertDate == "" {
-			return fmt.Errorf("Either 'alertAfter' or 'alertDate' fields must be present")
-		}
-	}
-	return nil
-}
-
-// CreateAlertResponse .
-type CreateAlertResponse struct {
-	AlertDate string `json:"alertDate"`
-}
-
-// CreateUserRequest .
-type CreateUserRequest struct {
-	Name  *string `json:"name"`
-	Email *string `json:"email"`
-}
-
-func (r *CreateUserRequest) Validate() error {
-	if r.Name == nil || r.Email == nil {
-		return fmt.Errorf("Missing fields")
-	}
-
-	*r.Name = strings.TrimSpace(*r.Name)
-	*r.Email = strings.TrimSpace(*r.Email)
-
-	if *r.Name == "" || *r.Email == "" {
-		return fmt.Errorf("'name' and 'email' can't be empty")
-	}
-
-	re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+$`)
-	if !re.MatchString(*r.Email) {
-		return fmt.Errorf("Invalid 'email' value")
-	}
-
-	return nil
-}
-
-// CreateUserResponse .
-type CreateUserResponse struct {
-	Token   string `json:"token"`
-	Expires int64  `json:"expires"`
-}
-
-// GetAlertsResponse .
-type GetAlertsResponse struct {
-	Alerts []*models.Alert `json:"alerts"`
-	Count  int             `json:"count"`
-}
-
-type UpdateAlertRequest struct {
-	Enabled *bool `json:"enabled"`
-}
-
+// AlertDetail returns alert object
 func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	authorization := r.Header.Get("Authorization")
 
@@ -156,7 +76,7 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 	if r.Method == "GET" {
 		return alert, nil
 	} else if r.Method == "PATCH" {
-		req := &UpdateAlertRequest{}
+		req := &models.UpdateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
 
@@ -203,7 +123,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 	}
 
 	if r.Method == "POST" {
-		req := &CreateAlertRequest{}
+		req := &models.CreateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
 
@@ -270,7 +190,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 
 		h.alt.AddAlert(alert.ID.Hex(), time.Duration(seconds)*time.Second)
 
-		res := &CreateAlertResponse{alertDate.Format(time.RFC3339)}
+		res := &models.CreateAlertResponse{AlertDate: alertDate.Format(time.RFC3339)}
 		return res, nil
 	} else if r.Method == "GET" {
 		alerts, err := h.stg.GetUserAlerts(userID)
@@ -280,7 +200,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 			return nil, err
 		}
 
-		res := &GetAlertsResponse{Alerts: alerts, Count: len(alerts)}
+		res := &models.GetAlertsResponse{Alerts: alerts, Count: len(alerts)}
 
 		return res, nil
 	} else {
@@ -327,10 +247,10 @@ func (h *Handlers) ProcessAlert(alertID string) error {
 	return nil
 }
 
-// CreateUser .
+// CreateUser creates a new user
 func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	if r.Method == "POST" {
-		req := &CreateUserRequest{}
+		req := &models.CreateUserRequest{}
 
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&req)
@@ -363,7 +283,7 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface
 			return nil, err
 		}
 
-		res := &CreateUserResponse{Token: tokenString, Expires: exp.Unix()}
+		res := &models.CreateUserResponse{Token: tokenString, Expires: exp.Unix()}
 		return res, nil
 	}
 

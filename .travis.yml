@@ -1,4 +1,4 @@
 language: go
 go:
   - 1.7.1
-script: go test -v ./auth ./channel # for skipping storage and logger tests for now
+script: go test -v ./auth ./channel ./models # for skipping storage and logger tests for now

@@ -27,6 +27,7 @@ type Alert struct {
 	User        bson.ObjectId `json:"-"`
 }
 
+// NewAlert creates a new Alert struct
 func NewAlert() *Alert {
 	return &Alert{
 		Enabled: true,
