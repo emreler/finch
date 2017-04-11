@@ -9,9 +9,6 @@ import (
 // MongoConfig has config values for MongoDB
 type MongoConfig string
 
-// LogentriesConfig has config values for Logentries
-type LogentriesConfig string
-
 // RedisConfig has config values for Redis
 type RedisConfig struct {
 	Addr                string `json:"addr"`
@@ -22,10 +19,9 @@ type RedisConfig struct {
 
 // Config struct defines the config structure
 type Config struct {
-	Mongo      MongoConfig      `json:"mongo"`
-	Redis      RedisConfig      `json:"redis"`
-	Logentries LogentriesConfig `json:"logentries"`
-	Secret     string           `json:"secret"`
+	Mongo  MongoConfig `json:"mongo"`
+	Redis  RedisConfig `json:"redis"`
+	Secret string      `json:"secret"`
 }
 
 // NewConfig parses config file and return Config struct

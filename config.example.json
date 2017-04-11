@@ -7,6 +7,5 @@
     "processingAlertsKey": "finch:alerts:processing"
   },
   "host": "localhost:8081",
-  "logentries": "LOGENTRIES_KEY",
   "secret": "SOME_KEY_FOR_YOUR_APP_KEEP_IT_SECRET"
 }
