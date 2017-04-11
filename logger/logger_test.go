@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-
-	"github.com/emreler/finch/config"
 )
 
 type SomeStruct struct {
@@ -16,10 +14,8 @@ type SomeStruct struct {
 var l *Logger
 
 func TestMain(m *testing.M) {
-	config := config.NewConfig("../config.json")
-	l = NewLogger(config.Logentries)
+	l = NewLogger()
 	res := m.Run()
-	l.conn.Close()
 	os.Exit(res)
 }
 

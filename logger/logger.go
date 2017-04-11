@@ -3,9 +3,6 @@ package logger
 import (
 	"encoding/json"
 	"log"
-
-	"github.com/bsphere/le_go"
-	"github.com/emreler/finch/config"
 )
 
 const (
@@ -14,9 +11,7 @@ const (
 )
 
 // Logger .
-type Logger struct {
-	conn *le_go.Logger
-}
+type Logger struct{}
 
 // LogMessage .
 type LogMessage struct {
@@ -25,16 +20,8 @@ type LogMessage struct {
 }
 
 // NewLogger .
-func NewLogger(token config.LogentriesConfig) *Logger {
-	le, err := le_go.Connect(string(token))
-
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println("Connected to Logentries")
-
-	return &Logger{le}
+func NewLogger() *Logger {
+	return &Logger{}
 }
 
 // Info .
@@ -49,7 +36,6 @@ func (l *Logger) Info(data interface{}) {
 		j, _ = json.Marshal(logMsg)
 
 		log.Println(string(j))
-		l.conn.Println(string(j))
 	} else {
 		jstring, _ := json.Marshal(data)
 
@@ -61,7 +47,6 @@ func (l *Logger) Info(data interface{}) {
 		j, _ = json.Marshal(logMsg)
 
 		log.Println(string(j))
-		l.conn.Println(string(j))
 	}
 }
 
@@ -74,5 +59,4 @@ func (l *Logger) Error(err error) {
 	j, _ := json.Marshal(logMsg)
 
 	log.Println(string(j))
-	l.conn.Println(string(j))
 }

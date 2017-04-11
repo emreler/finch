@@ -4,10 +4,6 @@
 	"GodepVersion": "v79",
 	"Deps": [
 		{
-			"ImportPath": "github.com/bsphere/le_go",
-			"Rev": "d3308aafe090956bc89a65f0769f58251a1b4f03"
-		},
-		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
 			"Comment": "v3.0.0-12-ga601269",
 			"Rev": "a601269ab70c205d26370c16f7c81e9017c14e04"
