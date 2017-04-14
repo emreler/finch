@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -138,7 +137,7 @@ func main() {
 		}
 	}()
 
-	log.Println("Starting server")
+	appLogger.Info("Starting server")
 	fmt.Println(http.ListenAndServe(":8081", mux))
 
 }
