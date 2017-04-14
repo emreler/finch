@@ -2,11 +2,11 @@ package channel
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/emreler/finch/logger"
 	"github.com/emreler/finch/models"
 )
 
@@ -20,6 +20,11 @@ const (
 
 // HTTPChannel implements the http request alert method
 type HTTPChannel struct {
+	logger *logger.Logger
+}
+
+func NewHTTPChannel(aLogger *logger.Logger) *HTTPChannel {
+	return &HTTPChannel{logger: aLogger}
 }
 
 func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {
@@ -76,7 +81,7 @@ func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {
 	// 	return err
 	// }
 
-	log.Printf("Response for %s request to %s: %d", alert.Method, alert.URL, resp.StatusCode)
+	h.logger.Info(fmt.Sprintf("Response for %s request to %s: %d", alert.Method, alert.URL, resp.StatusCode))
 
 	return resp.StatusCode, nil
 }
