@@ -13,50 +13,22 @@ const (
 // Logger .
 type Logger struct{}
 
-// LogMessage .
-type LogMessage struct {
-	Level   string `json:"level"`
-	Message string `json:"message"`
-}
-
-// NewLogger .
+// NewLogger returns a new Logger.
 func NewLogger() *Logger {
 	return &Logger{}
 }
 
-// Info .
+// Info logs messages with INFO level. Parameter must be either string or JSON serializable structs.
 func (l *Logger) Info(data interface{}) {
-	var j []byte
 	if str, ok := data.(string); ok {
-		logMsg := &LogMessage{
-			Level:   levelInfo,
-			Message: str,
-		}
-
-		j, _ = json.Marshal(logMsg)
-
-		log.Println(string(j))
+		log.Printf("level=%s message='%s'", levelInfo, str)
 	} else {
 		jstring, _ := json.Marshal(data)
-
-		logMsg := &LogMessage{
-			Level:   levelInfo,
-			Message: string(jstring),
-		}
-
-		j, _ = json.Marshal(logMsg)
-
-		log.Println(string(j))
+		log.Printf("level=%s message='%s'", levelInfo, jstring)
 	}
 }
 
+// Error logs error with ERROR level.
 func (l *Logger) Error(err error) {
-	logMsg := &LogMessage{
-		Level:   levelError,
-		Message: err.Error(),
-	}
-
-	j, _ := json.Marshal(logMsg)
-
-	log.Println(string(j))
+	log.Printf("level=%s message='%s'", levelError, err)
 }

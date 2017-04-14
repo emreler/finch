@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestLog(t *testing.T) {
-	l.Info("hello again")
-	l.Info(&SomeStruct{"Emığre Kağçıyan", 5234})
-	l.Error(fmt.Errorf("some error occured with just error"))
+	l.Info("some info log line")
+	l.Info(&SomeStruct{"another info log line in a struct", 5234})
+	l.Error(fmt.Errorf("some error line"))
 }
