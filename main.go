@@ -33,9 +33,9 @@ func main() {
 	auth := auth.NewAuth(config.Secret)
 	stg := storage.NewStorage(config.Mongo)
 	alerter := storage.NewAlerter(config.Redis, &alertChannel)
-	logger := logger.NewLogger()
+	appLogger := logger.NewLogger()
 
-	hnd := handlers.NewHandlers(stg, alerter, logger, auth, counterChannel)
+	hnd := handlers.NewHandlers(stg, alerter, appLogger, auth, counterChannel)
 
 	processedAlertCount, err := stg.CountProcessAlertLogs()
 	if err != nil {
@@ -54,7 +54,7 @@ func main() {
 			t, err := t.ParseFiles("web/index.html")
 
 			if err != nil {
-				logger.Error(err)
+				appLogger.Error(err)
 			}
 
 			vars := struct {
@@ -88,7 +88,7 @@ func main() {
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			logger.Error(err)
+			appLogger.Error(err)
 			return
 		}
 
@@ -125,13 +125,13 @@ func main() {
 				if err == nil {
 					alerter.RemoveProcessedAlert(alertID)
 				} else if _, ok := err.(*errors.RetryProcessError); ok {
-					logger.Info("retrying")
-					logger.Error(err)
+					appLogger.Info("retrying")
+					appLogger.Error(err)
 					alerter.AddAlertToQueue(alertID)
 					alerter.RemoveProcessedAlert(alertID)
 				} else {
 					// unknown error
-					logger.Error(err)
+					appLogger.Error(err)
 					alerter.RemoveProcessedAlert(alertID)
 				}
 			}(alertID)

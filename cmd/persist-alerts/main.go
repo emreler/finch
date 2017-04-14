@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"github.com/emreler/finch/config"
+	"github.com/emreler/finch/logger"
 
 	redis "gopkg.in/redis.v4"
 )
@@ -12,6 +12,8 @@ import (
 func main() {
 	configPath := flag.String("config", "", "Path of config.json file")
 	flag.Parse()
+
+	appLogger := logger.NewLogger()
 
 	config := config.NewConfig(*configPath)
 
@@ -30,24 +32,24 @@ func main() {
 		panic(err)
 	}
 
-	log.Println("Starting finch-persist-alerts")
+	appLogger.Info("Starting finch-persist-alerts")
 
 	for {
 		alert, err := pubsub.ReceiveMessage()
 
 		if err != nil {
-			log.Print(err)
+			appLogger.Error(err)
 			continue
 		}
 
 		alertID := alert.Payload
 
-		log.Println(alertID)
+		appLogger.Info(alertID)
 
 		go func() {
 			err := client.LPush(config.Redis.PendingAlertsKey, alertID).Err()
 			if err != nil {
-				log.Print(err)
+				appLogger.Error(err)
 			}
 		}()
 	}
