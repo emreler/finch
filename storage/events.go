@@ -14,7 +14,7 @@ const typeCreateUser = "create_user"
 const typeProcessAlert = "process_alert"
 
 // GetAlertHistory returns event history for passed alertID
-func (s *Storage) GetAlertHistory(alertID string, limit int) (*[]models.ProcessAlert, error) {
+func (s *MongoStorage) GetAlertHistory(alertID string, limit int) (*[]models.ProcessAlert, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -44,7 +44,7 @@ func (s *Storage) GetAlertHistory(alertID string, limit int) (*[]models.ProcessA
 }
 
 // CountProcessAlertLogs counts total number of "process_alert" events
-func (s *Storage) CountProcessAlertLogs() (int, error) {
+func (s *MongoStorage) CountProcessAlertLogs() (int, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -64,7 +64,7 @@ func (s *Storage) CountProcessAlertLogs() (int, error) {
 }
 
 // LogProcessAlert creates process_alert event
-func (s *Storage) LogProcessAlert(alert *models.Alert, statusCode int) error {
+func (s *MongoStorage) LogProcessAlert(alert *models.Alert, statusCode int) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -85,7 +85,7 @@ func (s *Storage) LogProcessAlert(alert *models.Alert, statusCode int) error {
 }
 
 // LogCreateAlert creates create_alert event
-func (s *Storage) LogCreateAlert(alert *models.Alert) error {
+func (s *MongoStorage) LogCreateAlert(alert *models.Alert) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -109,7 +109,7 @@ func (s *Storage) LogCreateAlert(alert *models.Alert) error {
 }
 
 // LogCreateUser creates create_user event
-func (s *Storage) LogCreateUser(user *models.User) error {
+func (s *MongoStorage) LogCreateUser(user *models.User) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 

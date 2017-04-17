@@ -14,29 +14,29 @@ import (
 	"github.com/emreler/finch/models"
 )
 
-// Storage struct is used for storeing persistant data of alerts
-type Storage struct {
+// MongoStorage struct is used for storeing persistant data of alerts
+type MongoStorage struct {
 	session *mgo.Session
 }
 
 // NewStorage creates and returns new Storage instance
-func NewStorage(url config.MongoConfig) *Storage {
+func NewStorage(url config.MongoConfig) *MongoStorage {
 	ses, err := mgo.Dial(string(url))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return &Storage{session: ses}
+	return &MongoStorage{session: ses}
 }
 
 // GetDBSession returns a new connection from the pool
-func (s *Storage) GetDBSession() *mgo.Session {
+func (s *MongoStorage) GetDBSession() *mgo.Session {
 	return s.session.Copy()
 }
 
 // CreateUser creates new user
-func (s *Storage) CreateUser(user *models.User) error {
+func (s *MongoStorage) CreateUser(user *models.User) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -52,7 +52,7 @@ func (s *Storage) CreateUser(user *models.User) error {
 }
 
 // CreateAlert adds new alert to storage
-func (s *Storage) CreateAlert(a *models.Alert) error {
+func (s *MongoStorage) CreateAlert(a *models.Alert) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -67,7 +67,7 @@ func (s *Storage) CreateAlert(a *models.Alert) error {
 }
 
 // GetAlert Finds and returns alert data from storage
-func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
+func (s *MongoStorage) GetAlert(alertID string) (*models.Alert, error) {
 	ID := bson.ObjectIdHex(alertID)
 
 	ses := s.GetDBSession()
@@ -86,7 +86,7 @@ func (s *Storage) GetAlert(alertID string) (*models.Alert, error) {
 }
 
 // UpdateAlert .
-func (s *Storage) UpdateAlert(alert *models.Alert) error {
+func (s *MongoStorage) UpdateAlert(alert *models.Alert) error {
 	ses := s.GetDBSession()
 	ses.SetSocketTimeout(time.Second * 10)
 	ses.SetSyncTimeout(time.Second * 10)
@@ -102,7 +102,7 @@ func (s *Storage) UpdateAlert(alert *models.Alert) error {
 }
 
 // GetUserAlerts .
-func (s *Storage) GetUserAlerts(userID string) ([]*models.Alert, error) {
+func (s *MongoStorage) GetUserAlerts(userID string) ([]*models.Alert, error) {
 	if match, _ := regexp.Match(`(?i)^[a-f\d]{24}$`, []byte(userID)); !match {
 		return nil, fmt.Errorf("User ID '%s' is not a valid MongoDB ObjectID", userID)
 	}
