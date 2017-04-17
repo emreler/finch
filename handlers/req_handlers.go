@@ -17,8 +17,10 @@ import (
 )
 
 const (
-	// TypeHTTP .
-	TypeHTTP = "http"
+	typeHTTP    = "http"
+	methodGet   = "GET"
+	methodPost  = "POST"
+	methodPatch = "PATCH"
 )
 
 // Handlers .
@@ -54,53 +56,71 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 		return nil, err
 	}
 
-	re = regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})$")
-	match = re.FindStringSubmatch(r.URL.Path)
+	historyPattern := regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})/history$")
+	detailPattern := regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})$")
 
-	if len(match) != 2 {
-		return nil, fmt.Errorf("Invalid URL")
-	}
+	if match = historyPattern.FindStringSubmatch(r.URL.Path); len(match) == 2 && r.Method == methodGet {
+		alertID := match[1]
 
-	alertID := match[1]
-
-	alert, err := h.stg.GetAlert(alertID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if alert.User.Hex() != userID {
-		return nil, fmt.Errorf("Unauthorized request")
-	}
-
-	if r.Method == "GET" {
-		return alert, nil
-	} else if r.Method == "PATCH" {
-		req := &models.UpdateAlertRequest{}
-
-		decoder := json.NewDecoder(r.Body)
-
-		if err = decoder.Decode(&req); err != nil {
-			h.logger.Error(err)
-			return nil, fmt.Errorf("Invalid format")
-		}
-
-		if req.Enabled == nil {
-			return nil, fmt.Errorf("Invalid format")
-		}
-
-		alert.Enabled = *req.Enabled
-
-		err := h.stg.UpdateAlert(alert)
+		alert, err := h.stg.GetAlert(alertID)
 
 		if err != nil {
 			return nil, err
 		}
 
-		return nil, nil
+		if alert.User.Hex() != userID {
+			return nil, fmt.Errorf("Unauthorized request")
+		}
+
+		alertHistory, _ := h.stg.GetAlertHistory(alertID, 100)
+
+		return alertHistory, nil
+
+	} else if match = detailPattern.FindStringSubmatch(r.URL.Path); len(match) == 2 {
+		alertID := match[1]
+
+		alert, err := h.stg.GetAlert(alertID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if alert.User.Hex() != userID {
+			return nil, fmt.Errorf("Unauthorized request")
+		}
+
+		if r.Method == methodGet {
+			return alert, nil
+		} else if r.Method == methodPatch {
+			req := &models.UpdateAlertRequest{}
+
+			decoder := json.NewDecoder(r.Body)
+
+			if err = decoder.Decode(&req); err != nil {
+				h.logger.Error(err)
+				return nil, fmt.Errorf("Invalid format")
+			}
+
+			if req.Enabled == nil {
+				return nil, fmt.Errorf("Invalid format")
+			}
+
+			alert.Enabled = *req.Enabled
+
+			err := h.stg.UpdateAlert(alert)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("Invalid method")
+	} else {
+		return nil, fmt.Errorf("Invalid URL")
 	}
 
-	return nil, fmt.Errorf("Invalid method")
 }
 
 // Alerts creates new alert
@@ -122,7 +142,7 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 		return nil, err
 	}
 
-	if r.Method == "POST" {
+	if r.Method == methodPost {
 		req := &models.CreateAlertRequest{}
 
 		decoder := json.NewDecoder(r.Body)
@@ -219,7 +239,7 @@ func (h *Handlers) ProcessAlert(alertID string) error {
 
 	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
 		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
-		if alert.Channel == TypeHTTP {
+		if alert.Channel == typeHTTP {
 			httpChannel := channel.NewHTTPChannel(h.logger)
 			statusCode, err := httpChannel.Notify(alert)
 
@@ -249,7 +269,7 @@ func (h *Handlers) ProcessAlert(alertID string) error {
 
 // CreateUser creates a new user
 func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-	if r.Method == "POST" {
+	if r.Method == methodPost {
 		req := &models.CreateUserRequest{}
 
 		decoder := json.NewDecoder(r.Body)
