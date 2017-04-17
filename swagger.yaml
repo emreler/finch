@@ -143,6 +143,9 @@ paths:
               enabled:
                 type: boolean
                 default: true
+      responses:
+        200:
+          description: Success message
   /alerts/{alertId}/history:
     parameters:
       - name: Authorization
@@ -161,6 +164,3 @@ paths:
       responses:
         200:
           description: Process alert history
-      responses:
-        200:
-          description: Success message
