@@ -13,6 +13,37 @@ const typeCreateAlert = "create_alert"
 const typeCreateUser = "create_user"
 const typeProcessAlert = "process_alert"
 
+// GetAlertHistory returns event history for passed alertID
+func (s *Storage) GetAlertHistory(alertID string, limit int) (*[]models.ProcessAlert, error) {
+	ses := s.GetDBSession()
+	defer ses.Close()
+
+	find := struct {
+		Type  string
+		Alert bson.ObjectId
+	}{
+		typeProcessAlert,
+		bson.ObjectIdHex(alertID),
+	}
+
+	var res []models.ProcessAlert
+
+	query := ses.DB("finch").C(eventsCollection).Find(find)
+
+	if limit != 0 && limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	err := query.Sort("-createdat").All(&res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CountProcessAlertLogs counts total number of "process_alert" events
 func (s *Storage) CountProcessAlertLogs() (int, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
@@ -37,16 +68,11 @@ func (s *Storage) LogProcessAlert(alert *models.Alert, statusCode int) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
-	data := struct {
-		Type       string
-		Alert      bson.ObjectId
-		StatusCode int
-		CreatedAt  time.Time
-	}{
-		typeProcessAlert,
-		alert.ID,
-		statusCode,
-		time.Now(),
+	data := &models.ProcessAlert{
+		Type:       typeProcessAlert,
+		Alert:      alert.ID,
+		StatusCode: statusCode,
+		CreatedAt:  time.Now(),
 	}
 
 	err := ses.DB("finch").C(eventsCollection).Insert(data)

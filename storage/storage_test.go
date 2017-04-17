@@ -23,11 +23,19 @@ func TestMain(m *testing.M) {
 }
 
 func TestLogEvents(t *testing.T) {
-	err := s.LogProcessAlert(&models.Alert{ID: bson.NewObjectId()}, 200)
+	myAlertID := bson.NewObjectId()
+	err := s.LogProcessAlert(&models.Alert{ID: myAlertID}, 200)
 
 	if err != nil {
 		t.Error(err)
 	}
+
+	err = s.LogProcessAlert(&models.Alert{ID: myAlertID}, 200)
+
+	if err != nil {
+		t.Error(err)
+	}
+
 	err = s.LogCreateAlert(&models.Alert{ID: bson.NewObjectId()})
 
 	if err != nil {
@@ -39,6 +47,12 @@ func TestLogEvents(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	res, err := s.GetAlertHistory(myAlertID.Hex(), 10)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(res)
 }
 
 func TestCreateUser(t *testing.T) {
