@@ -25,15 +25,15 @@ const (
 
 // Handlers .
 type Handlers struct {
-	stg            *storage.Storage
-	alt            *storage.Alerter
+	stg            storage.Storage
+	alt            storage.Alerter
 	logger         *logger.Logger
 	auth           *auth.Auth
 	counterChannel chan bool
 }
 
 // NewHandlers initializes handlers
-func NewHandlers(stg *storage.Storage, alt *storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool) *Handlers {
+func NewHandlers(stg storage.Storage, alt storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool) *Handlers {
 	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel}
 }
 

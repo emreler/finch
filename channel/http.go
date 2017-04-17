@@ -75,12 +75,6 @@ func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {
 	}
 
 	resp.Body.Close()
-	// defer resp.Body.Close()
-	//
-	// var body []byte
-	// if body, err = ioutil.ReadAll(resp.Body); err != nil {
-	// 	return err
-	// }
 
 	h.logger.Info(fmt.Sprintf("Response for %s request to %s: %d", alert.Method, alert.URL, resp.StatusCode))
 

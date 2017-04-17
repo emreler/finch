@@ -10,7 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-var s *Storage
+var s Storage
 var userID string
 var alertID string
 var alert *models.Alert
