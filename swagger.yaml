@@ -143,6 +143,24 @@ paths:
               enabled:
                 type: boolean
                 default: true
+  /alerts/{alertId}/history:
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+        default: "Bearer "
+        description: "JSON Web Token (JWT) obtained from /users endpoint."
+      - name: alertId
+        in: path
+        type: string
+        required: true
+        description: Alert ID
+    get:
+      summary: Get process history of alert for last 100 events
+      responses:
+        200:
+          description: Process alert history
       responses:
         200:
           description: Success message
