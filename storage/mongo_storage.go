@@ -79,7 +79,12 @@ func (s *MongoStorage) GetAlert(alertID string) (*models.Alert, error) {
 	err := ses.DB("finch").C("alerts").Find(bson.M{"_id": ID}).One(alert)
 
 	if err != nil {
-		return nil, &errors.RetryProcessError{Msg: err.Error()}
+		// don't retry if it's a "not found" error
+		if err.Error() != mgo.ErrNotFound.Error() {
+			return nil, &errors.RetryProcessError{Msg: err.Error()}
+		}
+
+		return nil, err
 	}
 
 	return alert, nil
