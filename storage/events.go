@@ -14,7 +14,7 @@ const typeCreateUser = "create_user"
 const typeProcessAlert = "process_alert"
 
 // GetAlertHistory returns event history for passed alertID
-func (s *MongoStorage) GetAlertHistory(alertID string, limit int) (*[]models.ProcessAlert, error) {
+func (s *MongoStorage) GetAlertHistory(alertID string, limit int) ([]*models.ProcessAlert, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
 
@@ -26,7 +26,7 @@ func (s *MongoStorage) GetAlertHistory(alertID string, limit int) (*[]models.Pro
 		bson.ObjectIdHex(alertID),
 	}
 
-	var res []models.ProcessAlert
+	var res []*models.ProcessAlert
 
 	query := ses.DB("finch").C(eventsCollection).Find(find)
 
@@ -40,7 +40,7 @@ func (s *MongoStorage) GetAlertHistory(alertID string, limit int) (*[]models.Pro
 		return nil, err
 	}
 
-	return &res, nil
+	return res, nil
 }
 
 // CountProcessAlertLogs counts total number of "process_alert" events

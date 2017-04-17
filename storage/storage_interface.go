@@ -9,7 +9,7 @@ type Storage interface {
 	GetAlert(string) (*models.Alert, error)
 	UpdateAlert(*models.Alert) error
 	GetUserAlerts(string) ([]*models.Alert, error)
-	GetAlertHistory(alertID string, limit int) (*[]models.ProcessAlert, error)
+	GetAlertHistory(alertID string, limit int) ([]*models.ProcessAlert, error)
 	CountProcessAlertLogs() (int, error)
 	LogProcessAlert(alert *models.Alert, statusCode int) error
 	LogCreateAlert(alert *models.Alert) error
