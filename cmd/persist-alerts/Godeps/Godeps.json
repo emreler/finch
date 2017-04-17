@@ -5,11 +5,11 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/emreler/finch/config",
-			"Rev": "c72138db5d966088c6eae4c871b6c1ecd0abfa50"
+			"Rev": "97dbfea59c402f54c60dd315aee0929e12e3f440"
 		},
 		{
 			"ImportPath": "github.com/emreler/finch/logger",
-			"Rev": "c72138db5d966088c6eae4c871b6c1ecd0abfa50"
+			"Rev": "97dbfea59c402f54c60dd315aee0929e12e3f440"
 		},
 		{
 			"ImportPath": "gopkg.in/bsm/ratelimit.v1",

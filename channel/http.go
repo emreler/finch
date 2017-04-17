@@ -23,6 +23,7 @@ type HTTPChannel struct {
 	logger *logger.Logger
 }
 
+// NewHTTPChannel returns new HTTPChannel struct.
 func NewHTTPChannel(aLogger *logger.Logger) *HTTPChannel {
 	return &HTTPChannel{logger: aLogger}
 }
