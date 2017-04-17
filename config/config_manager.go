@@ -17,10 +17,16 @@ type RedisConfig struct {
 	ProcessingAlertsKey string `json:"processingAlertsKey"`
 }
 
+// AppConfig contains app's business logic config values
+type AppConfig struct {
+	AlertLogLimit int `json:"alertLogLimit"`
+}
+
 // Config struct defines the config structure
 type Config struct {
 	Mongo  MongoConfig `json:"mongo"`
 	Redis  RedisConfig `json:"redis"`
+	App    AppConfig   `json:"app"`
 	Secret string      `json:"secret"`
 }
 
