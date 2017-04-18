@@ -3,13 +3,15 @@ package channel
 import (
 	"testing"
 
+	"github.com/emreler/finch/logger"
 	"github.com/emreler/finch/models"
 )
 
 func TestNotify(t *testing.T) {
-	h := &HTTPChannel{}
+	mockLogger := &logger.MockLogger{}
+	h := NewHTTPChannel(mockLogger)
 
-	statusCode, err := h.Notify(&models.Alert{URL: "https://google.com/", Method: methodGet})
+	statusCode, err := h.Notify(&models.Alert{URL: "http://example.com/", Method: methodGet})
 
 	if err != nil {
 		t.Error(err)
