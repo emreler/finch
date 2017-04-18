@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -32,7 +33,7 @@ func main() {
 	auth := auth.NewAuth(config.Secret)
 	stg := storage.NewStorage(config.Mongo)
 	alerter := storage.NewAlerter(config.Redis, &alertChannel)
-	appLogger := logger.NewLogger()
+	appLogger := logger.NewLogger(os.Stderr)
 
 	hnd := handlers.NewHandlers(stg, alerter, appLogger, auth, counterChannel, &config.App)
 

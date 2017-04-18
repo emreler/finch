@@ -20,12 +20,12 @@ const (
 
 // HTTPChannel implements the http request alert method
 type HTTPChannel struct {
-	logger *logger.Logger
+	logger logger.InfoErrorLogger
 }
 
 // NewHTTPChannel returns new HTTPChannel struct.
-func NewHTTPChannel(aLogger *logger.Logger) *HTTPChannel {
-	return &HTTPChannel{logger: aLogger}
+func NewHTTPChannel(logger logger.InfoErrorLogger) *HTTPChannel {
+	return &HTTPChannel{logger: logger}
 }
 
 func (h *HTTPChannel) Notify(alert *models.Alert) (int, error) {

@@ -14,7 +14,7 @@ type SomeStruct struct {
 var l *Logger
 
 func TestMain(m *testing.M) {
-	l = NewLogger()
+	l = NewLogger(os.Stdout)
 	res := m.Run()
 	os.Exit(res)
 }
