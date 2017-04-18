@@ -11,6 +11,7 @@ import (
 
 	"github.com/emreler/finch/auth"
 	"github.com/emreler/finch/channel"
+	"github.com/emreler/finch/config"
 	"github.com/emreler/finch/logger"
 	"github.com/emreler/finch/models"
 	"github.com/emreler/finch/storage"
@@ -30,11 +31,12 @@ type Handlers struct {
 	logger         *logger.Logger
 	auth           *auth.Auth
 	counterChannel chan bool
+	appConfig      *config.AppConfig
 }
 
 // NewHandlers initializes handlers
-func NewHandlers(stg storage.Storage, alt storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool) *Handlers {
-	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel}
+func NewHandlers(stg storage.Storage, alt storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool, config *config.AppConfig) *Handlers {
+	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel, appConfig: config}
 }
 
 // AlertDetail returns alert object
@@ -72,7 +74,7 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 			return nil, fmt.Errorf("Unauthorized request")
 		}
 
-		alertHistory, _ := h.stg.GetAlertHistory(alertID, 100)
+		alertHistory, _ := h.stg.GetAlertHistory(alertID, h.appConfig.AlertLogLimit)
 
 		return alertHistory, nil
 

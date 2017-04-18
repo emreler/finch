@@ -34,7 +34,7 @@ func main() {
 	alerter := storage.NewAlerter(config.Redis, &alertChannel)
 	appLogger := logger.NewLogger()
 
-	hnd := handlers.NewHandlers(stg, alerter, appLogger, auth, counterChannel)
+	hnd := handlers.NewHandlers(stg, alerter, appLogger, auth, counterChannel, &config.App)
 
 	processedAlertCount, err := stg.CountProcessAlertLogs()
 	if err != nil {
