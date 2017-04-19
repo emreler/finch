@@ -10,7 +10,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/emreler/finch/auth"
-	"github.com/emreler/finch/channel"
 	"github.com/emreler/finch/config"
 	"github.com/emreler/finch/logger"
 	"github.com/emreler/finch/models"
@@ -28,31 +27,49 @@ const (
 type Handlers struct {
 	stg            storage.Storage
 	alt            storage.Alerter
-	logger         *logger.Logger
+	logger         logger.InfoErrorLogger
 	auth           *auth.Auth
 	counterChannel chan bool
 	appConfig      *config.AppConfig
 }
 
 // NewHandlers initializes handlers
-func NewHandlers(stg storage.Storage, alt storage.Alerter, logger *logger.Logger, auth *auth.Auth, counterChannel chan bool, config *config.AppConfig) *Handlers {
-	return &Handlers{stg: stg, alt: alt, logger: logger, auth: auth, counterChannel: counterChannel, appConfig: config}
+func NewHandlers(stg storage.Storage, alt storage.Alerter, lgr logger.InfoErrorLogger, auth *auth.Auth, counterChannel chan bool, config *config.AppConfig) *Handlers {
+	return &Handlers{
+		stg:            stg,
+		alt:            alt,
+		logger:         lgr,
+		auth:           auth,
+		counterChannel: counterChannel,
+		appConfig:      config,
+	}
 }
 
-// AlertDetail returns alert object
-func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-	authorization := r.Header.Get("Authorization")
+// extractUserID returns userID from Authorization header.
+func (h *Handlers) extractUserID(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
 
 	re := regexp.MustCompile("Bearer (.*)")
-	match := re.FindStringSubmatch(authorization)
+	match := re.FindStringSubmatch(authHeader)
 
 	if len(match) != 2 {
-		return nil, fmt.Errorf("No token found in requst")
+		return "", fmt.Errorf("No token found in requst")
 	}
 
 	tokenString := match[1]
 
 	userID, err := h.auth.ValidateToken(tokenString)
+
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
+}
+
+// AlertDetail returns alert object or it's history
+func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+	userID, err := h.extractUserID(r)
 
 	if err != nil {
 		return nil, err
@@ -61,7 +78,7 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 	historyPattern := regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})/history$")
 	detailPattern := regexp.MustCompile("/alerts/([0-9A-Fa-f]{24})$")
 
-	if match = historyPattern.FindStringSubmatch(r.URL.Path); len(match) == 2 && r.Method == methodGet {
+	if match := historyPattern.FindStringSubmatch(r.URL.Path); len(match) == 2 && r.Method == methodGet {
 		alertID := match[1]
 
 		alert, err := h.stg.GetAlert(alertID)
@@ -127,18 +144,7 @@ func (h *Handlers) AlertDetail(w http.ResponseWriter, r *http.Request) (interfac
 
 // Alerts creates new alert
 func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-	authorization := r.Header.Get("Authorization")
-
-	re := regexp.MustCompile("Bearer (.*)")
-	match := re.FindStringSubmatch(authorization)
-
-	if len(match) != 2 {
-		return nil, fmt.Errorf("No token found in request")
-	}
-
-	tokenString := match[1]
-
-	userID, err := h.auth.ValidateToken(tokenString)
+	userID, err := h.extractUserID(r)
 
 	if err != nil {
 		return nil, err
@@ -228,45 +234,6 @@ func (h *Handlers) Alerts(w http.ResponseWriter, r *http.Request) (interface{}, 
 	} else {
 		return nil, fmt.Errorf("Invalid method: %s", r.Method)
 	}
-}
-
-// ProcessAlert processes the alert
-func (h *Handlers) ProcessAlert(alertID string) error {
-	alert, err := h.stg.GetAlert(alertID)
-
-	if err != nil {
-		h.logger.Error(err)
-		return err
-	}
-
-	if alert.Enabled == true && (alert.Schedule.RepeatCount == -1 || alert.Schedule.RepeatCount > 0) {
-		h.logger.Info(fmt.Sprintf("Processing %s", alertID))
-		if alert.Channel == typeHTTP {
-			httpChannel := channel.NewHTTPChannel(h.logger)
-			statusCode, err := httpChannel.Notify(alert)
-
-			if err != nil {
-				h.logger.Info(fmt.Sprintf("Error while notifying with HTTP channel. %s", err.Error()))
-			}
-
-			h.stg.LogProcessAlert(alert, statusCode)
-
-			h.counterChannel <- true
-		}
-
-		if alert.Schedule.RepeatCount > 0 {
-			alert.Schedule.RepeatCount--
-
-			h.stg.UpdateAlert(alert)
-		}
-	}
-
-	if alert.Schedule != nil && alert.Schedule.RepeatEvery > 0 {
-		h.logger.Info(fmt.Sprintf("Scheduling next alert %d seconds later", alert.Schedule.RepeatEvery))
-		h.alt.AddAlert(alertID, time.Duration(alert.Schedule.RepeatEvery)*time.Second)
-	}
-
-	return nil
 }
 
 // CreateUser creates a new user
