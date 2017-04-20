@@ -13,6 +13,7 @@ type MongoConfig string
 type RedisConfig struct {
 	Addr                string `json:"addr"`
 	Pwd                 string `json:"pwd"`
+	DB                  int    `json:"db"`
 	PendingAlertsKey    string `json:"pendingAlertsKey"`
 	ProcessingAlertsKey string `json:"processingAlertsKey"`
 }
