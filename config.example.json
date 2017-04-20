@@ -3,6 +3,7 @@
   "redis": {
     "addr": "redis:6379",
     "pwd": "",
+    "db": 0,
     "pendingAlertsKey": "finch:alerts:pending",
     "processingAlertsKey": "finch:alerts:processing"
   },

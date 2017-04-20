@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/emreler/finch/alerter"
 	"github.com/emreler/finch/auth"
 	"github.com/emreler/finch/config"
 	"github.com/emreler/finch/counter"
@@ -30,19 +31,18 @@ func main() {
 	alertChannel := make(chan string)
 	counterChannel := make(chan bool)
 
+	appLogger := logger.NewLogger(os.Stderr)
 	auth := auth.NewAuth(config.Secret)
 	stg := storage.NewStorage(config.Mongo)
-	alerter := storage.NewAlerter(config.Redis, &alertChannel)
-	appLogger := logger.NewLogger(os.Stderr)
-
-	hnd := handlers.NewHandlers(stg, alerter, appLogger, auth, counterChannel, &config.App)
+	alt := alerter.NewAlerter(config.Redis, &alertChannel, appLogger)
+	hnd := handlers.NewHandlers(stg, alt, appLogger, auth, counterChannel, &config.App)
 
 	processedAlertCount, err := stg.CountProcessAlertLogs()
 	if err != nil {
 		panic(err)
 	}
 
-	alerter.StartListening()
+	alt.StartListening()
 
 	mux := http.NewServeMux()
 
@@ -123,16 +123,16 @@ func main() {
 				err := hnd.ProcessAlert(alertID)
 
 				if err == nil {
-					alerter.RemoveProcessedAlert(alertID)
+					alt.RemoveProcessedAlert(alertID)
 				} else if _, ok := err.(*errors.RetryProcessError); ok {
 					appLogger.Info("retrying")
 					appLogger.Error(err)
-					alerter.AddAlertToQueue(alertID)
-					alerter.RemoveProcessedAlert(alertID)
+					alt.AddAlertToQueue(alertID)
+					alt.RemoveProcessedAlert(alertID)
 				} else {
 					// unknown error
 					appLogger.Error(err)
-					alerter.RemoveProcessedAlert(alertID)
+					alt.RemoveProcessedAlert(alertID)
 				}
 			}(alertID)
 		}

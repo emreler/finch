@@ -9,6 +9,7 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/emreler/finch/alerter"
 	"github.com/emreler/finch/auth"
 	"github.com/emreler/finch/config"
 	"github.com/emreler/finch/logger"
@@ -26,7 +27,7 @@ const (
 // Handlers .
 type Handlers struct {
 	stg            storage.Storage
-	alt            storage.Alerter
+	alt            alerter.Alerter
 	logger         logger.InfoErrorLogger
 	auth           *auth.Auth
 	counterChannel chan bool
@@ -34,7 +35,7 @@ type Handlers struct {
 }
 
 // NewHandlers initializes handlers
-func NewHandlers(stg storage.Storage, alt storage.Alerter, lgr logger.InfoErrorLogger, auth *auth.Auth, counterChannel chan bool, config *config.AppConfig) *Handlers {
+func NewHandlers(stg storage.Storage, alt alerter.Alerter, lgr logger.InfoErrorLogger, auth *auth.Auth, counterChannel chan bool, config *config.AppConfig) *Handlers {
 	return &Handlers{
 		stg:            stg,
 		alt:            alt,
